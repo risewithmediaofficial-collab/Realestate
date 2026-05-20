@@ -834,8 +834,8 @@ const AdminDashboardPage = () => {
 
       {/* View User Modal Overlay */}
       {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/20 p-3 transition-opacity sm:items-center sm:p-4">
-          <div className="dashboard-modal flex max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 p-0 transition-opacity sm:items-center sm:p-4">
+          <div className="modal-panel-white dashboard-modal flex max-h-[90dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[2rem] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[2rem]" style={{ background: "#ffffff" }}>
             <div className="flex items-center justify-between border-b border-slate-200/80 px-5 py-5">
               <h3 className="dashboard-display text-2xl font-semibold">User Details</h3>
               <button onClick={() => setSelectedUser(null)} className="text-slate-400 transition hover:text-slate-900">
@@ -955,8 +955,8 @@ const AdminDashboardPage = () => {
       )}
 
       {selectedLeadItem && (
-        <div className="fixed inset-0 z-[55] flex items-end justify-center bg-ink/20 p-3 transition-opacity sm:items-center sm:p-4">
-          <div className="dashboard-modal flex max-h-[calc(100dvh-1.5rem)] w-full max-w-3xl flex-col overflow-hidden">
+        <div className="fixed inset-0 z-[55] flex items-end justify-center bg-slate-950/50 p-0 transition-opacity sm:items-center sm:p-4">
+          <div className="modal-panel-white dashboard-modal flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-[2rem] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[2rem]" style={{ background: "#ffffff" }}>
             <div className="flex items-center justify-between border-b border-slate-200/80 px-5 py-5">
               <div>
                 <h3 className="dashboard-display text-2xl font-semibold">
@@ -1153,8 +1153,8 @@ const AdminDashboardPage = () => {
 
       {/* Email Modal */}
       {emailModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/20 p-3 sm:items-center sm:p-4">
-          <div className="dashboard-modal flex max-h-[calc(100dvh-1.5rem)] w-full max-w-lg flex-col overflow-hidden">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/50 p-0 sm:items-center sm:p-4">
+          <div className="modal-panel-white dashboard-modal flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[2rem] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[2rem]" style={{ background: "#ffffff" }}>
             <div className="flex items-center justify-between border-b border-slate-200/80 px-6 pb-4 pt-6">
               <h2 className="dashboard-display text-2xl font-semibold">{emailTarget === "all" ? "Broadcast Email to All" : "Send Email to User"}</h2>
               <button onClick={() => setEmailModalOpen(false)} className="text-slate-400 transition hover:text-slate-900">

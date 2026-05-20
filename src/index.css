@@ -345,9 +345,10 @@ h4,
 .dashboard-modal {
   border-radius: 2rem;
   border: 1px solid var(--site-border);
-  background: var(--site-surface-strong);
+  background: #ffffff;
   box-shadow: var(--site-shadow-strong);
   backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .dashboard-table {
@@ -820,5 +821,52 @@ select:focus-visible {
   input[type="radio"] {
     min-height: 20px;
     min-width: 20px;
+  }
+
+  /* ── Modal / Popup mobile fixes ── */
+  .dashboard-modal {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-radius: 1.5rem;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    width: 100%;
+    max-width: 100% !important;
+    margin: 0;
+  }
+
+  .modal-panel-white {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* ── Solid white modal panel (overrides bg-white transparency) ── */
+.modal-panel-white {
+  background: #ffffff !important;
+}
+
+/* ── Modal overlay backdrop ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgba(17, 17, 17, 0.45);
+}
+
+@media (min-width: 640px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .dashboard-modal {
+    border-radius: 2rem;
   }
 }

@@ -7,20 +7,31 @@ const ContactModal = ({ open, onClose, onSubmit, value, setValue, contact, inten
 
   return (
     <Dialog open={open} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-slate-950/18" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-end justify-center p-3 sm:items-center sm:p-4">
-        <DialogPanel className="flex max-h-[calc(100dvh-1.5rem)] w-full max-w-lg flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(17,17,17,0.14)]">
+      {/* Solid dark overlay for contrast on all screens */}
+      <div className="fixed inset-0 bg-slate-950/50" aria-hidden="true" />
+
+      {/* Bottom-sheet on mobile, centered on desktop */}
+      <div className="fixed inset-0 flex items-end justify-center p-0 sm:items-center sm:p-4">
+        <DialogPanel
+          className="modal-panel-white flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] border border-slate-200 shadow-[0_-8px_40px_rgba(17,17,17,0.18)] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[28px] sm:shadow-[0_28px_80px_rgba(17,17,17,0.18)]"
+          style={{ background: "#ffffff" }}
+        >
+          {/* Drag handle indicator on mobile */}
+          <div className="flex justify-center pt-3 sm:hidden">
+            <div className="h-1 w-10 rounded-full bg-slate-200" />
+          </div>
+
           <div className="overflow-y-auto p-5 sm:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">
                   {intentType === "brochure" ? "Brochure request" : "Contact request"}
                 </p>
-                <DialogTitle className="mt-2 text-2xl font-bold text-slate-900">
+                <DialogTitle className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl">
                   {intentType === "brochure" ? "Request property brochure" : "Request owner contact"}
                 </DialogTitle>
               </div>
-              <div className="rounded-full border border-slate-200 bg-slate-50 p-2 text-slate-900">
+              <div className="rounded-full border border-slate-200 p-2 text-slate-900" style={{ background: "#f8fafc" }}>
                 <ShieldCheckIcon className="h-5 w-5" />
               </div>
             </div>
@@ -32,7 +43,7 @@ const ContactModal = ({ open, onClose, onSubmit, value, setValue, contact, inten
             </p>
 
             {user ? (
-              <div className="mt-5 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+              <div className="mt-5 rounded-2xl border border-slate-200 p-4" style={{ background: "#f8fafc" }}>
                 <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Your shared details</p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <div>
@@ -48,8 +59,8 @@ const ContactModal = ({ open, onClose, onSubmit, value, setValue, contact, inten
             ) : null}
 
             {intentType !== "brochure" && contact ? (
-              <div className="mt-4 flex items-center gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <div className="rounded-full border border-slate-200 bg-white p-3 text-slate-900">
+              <div className="mt-4 flex items-center gap-4 rounded-2xl border border-slate-200 p-4" style={{ background: "#f8fafc" }}>
+                <div className="rounded-full border border-slate-200 p-3 text-slate-900" style={{ background: "#ffffff" }}>
                   <UserIcon className="h-5 w-5" />
                 </div>
                 <div>
@@ -64,7 +75,8 @@ const ContactModal = ({ open, onClose, onSubmit, value, setValue, contact, inten
                 Message
               </label>
               <textarea
-                className="site-input min-h-[120px] resize-none"
+                className="site-input min-h-[100px] resize-none sm:min-h-[120px]"
+                style={{ background: "#ffffff" }}
                 placeholder={
                   intentType === "brochure"
                     ? "I would like to receive the brochure for this property."
@@ -75,7 +87,7 @@ const ContactModal = ({ open, onClose, onSubmit, value, setValue, contact, inten
               />
             </div>
 
-            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <div className="mt-5 flex flex-col-reverse gap-3 pb-2 sm:mt-6 sm:flex-row sm:justify-end sm:pb-0">
               <button type="button" className="site-button-secondary px-5 py-3 text-sm" onClick={onClose}>
                 Cancel
               </button>
