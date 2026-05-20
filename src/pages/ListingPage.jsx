@@ -10,7 +10,6 @@ import {
   SparklesIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import Breadcrumbs from "../components/Breadcrumbs";
 import PropertyCard from "../components/PropertyCard";
 import FilterSidebar from "../components/FilterSidebar";
 import SeoHead from "../components/SeoHead";
@@ -20,7 +19,7 @@ import useAuth from "../hooks/useAuth";
 import useLowMotionDevice from "../hooks/useLowMotionDevice";
 import { fetchProperties } from "../services/api/propertyApi";
 import { toggleSavedProperty } from "../services/api/userApi";
-import { buildBreadcrumbSchema, buildCanonicalListingQuery } from "../utils/seo";
+import { buildCanonicalListingQuery } from "../utils/seo";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -117,14 +116,6 @@ const ListingPage = () => {
     const searchLabel = filters.search ? ` matching "${filters.search}"` : "";
     return `Browse verified ${filters.propertyType || "property"} listings${searchLabel} in ${city}. Compare apartments, villas, plots, and houses with detailed filters, local insights, and direct listing access.`;
   }, [filters.city, filters.propertyType, filters.search]);
-
-  const breadcrumbs = useMemo(
-    () => [
-      { label: "Home", to: "/" },
-      { label: "Listings", to: "/listings" },
-    ],
-    []
-  );
 
   useEffect(() => {
     const searchParams = new URLSearchParams();
@@ -251,9 +242,8 @@ const ListingPage = () => {
         description={listingDescription}
         keywords={`Hosur property listings, ${filters.propertyType || "property"} in ${filters.city || "Hosur"}, property for sale in Hosur, property for rent in Hosur`}
         canonicalPath={buildCanonicalListingQuery(filters)}
-        schema={[buildBreadcrumbSchema(breadcrumbs)]}
       />
-      <aside className="sticky top-24 hidden h-[calc(100vh-7rem)] w-80 shrink-0 overflow-y-auto rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_12px_30px_rgba(17,17,17,0.04)] md:block md:p-6">
+      <aside className="sticky top-24 hidden h-[calc(100vh-7rem)] w-80 shrink-0 overflow-y-auto rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,rgba(252,255,254,0.98),rgba(240,248,247,0.96))] p-5 shadow-[0_18px_38px_rgba(16,95,104,0.1)] md:block md:p-6">
         <div className="mb-4 flex items-center justify-between gap-3 md:mb-6">
           <div className="min-w-0">
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Search studio</p>
@@ -268,36 +258,45 @@ const ListingPage = () => {
 
       {mobileFilterOpen ? (
         <div className="fixed inset-0 z-50 flex md:hidden">
-          <div className="absolute inset-0 bg-slate-950/20" onClick={() => setMobileFilterOpen(false)} />
-          <aside className="relative ml-auto flex h-full w-full max-w-[86vw] flex-col overflow-hidden rounded-l-[32px] border-l border-slate-200 bg-white shadow-[0_18px_40px_rgba(17,17,17,0.08)]">
-            <div className="mb-5 flex items-center justify-between gap-3 px-5 pt-5">
-              <div className="min-w-0">
-                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Filters</p>
-                <h2 className="mt-1 text-lg font-bold text-slate-900">Refine search</h2>
+          <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[3px]" onClick={() => setMobileFilterOpen(false)} />
+          <aside className="relative ml-auto flex h-full w-full max-w-[88vw] flex-col overflow-hidden rounded-l-[32px] border-l border-slate-200 bg-[linear-gradient(180deg,rgba(252,255,254,1),rgba(238,247,246,1))] shadow-[0_28px_60px_rgba(16,95,104,0.18)]">
+            <div className="border-b border-slate-200 bg-[rgba(252,255,254,0.98)] px-5 py-5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Filters</p>
+                  <h2 className="mt-1 text-lg font-bold text-slate-900">Refine search</h2>
+                </div>
+                <button type="button" onClick={() => setMobileFilterOpen(false)} className="flex-shrink-0 rounded-2xl border border-slate-200 bg-[rgba(255,255,255,0.98)] p-2 text-slate-600 shadow-[0_12px_22px_rgba(16,95,104,0.08)]">
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
               </div>
-              <button type="button" onClick={() => setMobileFilterOpen(false)} className="rounded-2xl border border-slate-200 bg-white p-2 text-slate-600 flex-shrink-0">
-                <XMarkIcon className="h-5 w-5" />
-              </button>
+              <p className="mt-3 text-sm text-slate-500">Use the controls below to tighten price, type, and locality without leaving the results.</p>
             </div>
-            <div className="flex-1 overflow-y-auto px-5 pb-6">
-              <FilterSidebar
-                filters={filters}
-                setFilters={setFilters}
-                clearFilters={() => {
-                  clearFilters();
-                  setMobileFilterOpen(false);
-                }}
-              />
+            <div className="flex-1 overflow-y-auto px-5 py-5">
+              <div className="rounded-[1.75rem] border border-white/70 bg-[rgba(255,255,255,0.97)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+                <FilterSidebar
+                  filters={filters}
+                  setFilters={setFilters}
+                  clearFilters={() => {
+                    clearFilters();
+                    setMobileFilterOpen(false);
+                  }}
+                />
+              </div>
+            </div>
+            <div className="border-t border-slate-200 bg-[rgba(252,255,254,0.98)] px-5 py-4">
+              <button type="button" onClick={() => setMobileFilterOpen(false)} className="site-button-primary w-full px-4 py-3 text-sm">
+                View {data.total || data.items.length || 0} Properties
+              </button>
             </div>
           </aside>
         </div>
       ) : null}
 
       <section className="min-w-0 flex-1 space-y-6">
-        <Breadcrumbs items={breadcrumbs} className="px-1" />
         <section
           ref={heroRef}
-          className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_12px_30px_rgba(17,17,17,0.04)] md:p-8"
+          className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(234,247,245,0.92))] p-6 shadow-[0_16px_38px_rgba(16,95,104,0.08)] md:p-8"
         >
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

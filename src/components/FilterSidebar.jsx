@@ -1,4 +1,5 @@
 const inputClass = "site-input";
+
 const propertyTypeOptions = [
   "Apartment",
   "Villa",
@@ -127,8 +128,8 @@ const FilterSidebar = ({ filters, setFilters, clearFilters }) => {
           <div className="space-y-3">
             <div>
               <div className="mb-2 flex justify-between">
-                <span className="text-xs text-slate-600">Min: ₹{filters.minPrice ? (filters.minPrice / 100000).toFixed(1) : 0} L</span>
-                <span className="text-xs text-slate-600">Max: ₹{filters.maxPrice ? (filters.maxPrice / 100000).toFixed(1) : 100} L</span>
+                <span className="text-xs text-slate-600">Min: Rs {filters.minPrice ? (filters.minPrice / 100000).toFixed(1) : 0} L</span>
+                <span className="text-xs text-slate-600">Max: Rs {filters.maxPrice ? (filters.maxPrice / 100000).toFixed(1) : 100} L</span>
               </div>
               <input
                 type="range"
