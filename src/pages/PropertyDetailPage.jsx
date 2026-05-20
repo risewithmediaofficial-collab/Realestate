@@ -12,7 +12,6 @@ import {
   PhoneIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
-import Breadcrumbs from "../components/Breadcrumbs";
 import ImageGallery from "../components/ImageGallery";
 import PropertyCard from "../components/PropertyCard";
 import ContactModal from "../components/ContactModal";
@@ -261,7 +260,6 @@ const PropertyDetailPage = () => {
         type="article"
         schema={[buildRealEstateAgentSchema(), buildBreadcrumbSchema(breadcrumbs), buildFaqSchema(faqItems)]}
       />
-      <Breadcrumbs items={breadcrumbs} className="px-1" />
       <section
         ref={heroRef}
         className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_12px_30px_rgba(17,17,17,0.04)] md:p-6 lg:p-8"

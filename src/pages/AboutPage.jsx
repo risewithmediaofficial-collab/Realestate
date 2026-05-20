@@ -6,7 +6,6 @@ import {
   ShieldCheckIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
-import Breadcrumbs from "../components/Breadcrumbs";
 import CountUpNumber from "../components/CountUpNumber";
 import SeoHead from "../components/SeoHead";
 import { buildBreadcrumbSchema, buildRealEstateAgentSchema } from "../utils/seo";
@@ -61,8 +60,6 @@ const AboutPage = () => {
         canonicalPath="/about"
         schema={[buildRealEstateAgentSchema(), buildBreadcrumbSchema(breadcrumbs)]}
       />
-
-      <Breadcrumbs items={breadcrumbs} className="px-1" />
 
       <MotionSection
         initial="hidden"

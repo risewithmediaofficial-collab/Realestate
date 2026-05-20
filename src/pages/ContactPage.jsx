@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { EnvelopeIcon, MapPinIcon, PhoneIcon } from "@heroicons/react/24/outline";
-import Breadcrumbs from "../components/Breadcrumbs";
 import SeoHead from "../components/SeoHead";
 import { buildBreadcrumbSchema, buildRealEstateAgentSchema } from "../utils/seo";
 
@@ -54,8 +53,6 @@ const ContactPage = () => {
         canonicalPath="/contact"
         schema={[buildRealEstateAgentSchema(), buildBreadcrumbSchema(breadcrumbs)]}
       />
-
-      <Breadcrumbs items={breadcrumbs} className="px-1" />
 
       <MotionSection
         initial="hidden"
