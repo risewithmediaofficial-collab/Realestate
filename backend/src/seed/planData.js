@@ -150,7 +150,7 @@ const plans = [
   {
     name: "DB Pack 2: Volume",
     subtitle: "Bulk Contacts Database",
-    price: 1000,
+    price: 10000,
     billingLabel: "/25 contacts",
     ctaLabel: "Buy DB Pack",
     recommended: true,
