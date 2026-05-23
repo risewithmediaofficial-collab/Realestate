@@ -13,7 +13,7 @@ const ContactModal = ({ open, onClose, onSubmit, value, setValue, contact, inten
       {/* Bottom-sheet on mobile, centered on desktop */}
       <div className="fixed inset-0 flex items-end justify-center p-0 sm:items-center sm:p-4">
         <DialogPanel
-          className="modal-panel-white flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] border border-slate-200 shadow-[0_-8px_40px_rgba(17,17,17,0.18)] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[28px] sm:shadow-[0_28px_80px_rgba(17,17,17,0.18)]"
+          className="modal-panel-white flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-xl border border-slate-200 shadow-card sm:max-h-[calc(100dvh-2rem)] sm:rounded-xl"
           style={{ background: "#ffffff" }}
         >
           {/* Drag handle indicator on mobile */}

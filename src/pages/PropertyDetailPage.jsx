@@ -198,7 +198,7 @@ const PropertyDetailPage = () => {
   if (loading) {
     return (
       <main className="w-full px-4 py-10 sm:px-5 lg:px-6">
-        <div className="site-section flex h-72 items-center justify-center">
+        <div className="marketing-card flex h-72 items-center justify-center">
           <p className="text-sm font-medium text-slate-500">Loading property details...</p>
         </div>
       </main>
@@ -213,7 +213,7 @@ const PropertyDetailPage = () => {
           description="This property listing is unavailable or may have been removed from MyHosurProperty."
           noIndex
         />
-        <div className="site-section flex h-72 flex-col items-center justify-center gap-4 text-center">
+        <div className="marketing-card flex h-72 flex-col items-center justify-center gap-4 text-center">
           <h1 className="text-2xl font-bold text-slate-900">Property unavailable</h1>
           <p className="max-w-md text-sm leading-7 text-slate-600">{error || "The property you are looking for does not exist."}</p>
           <button type="button" onClick={() => window.history.back()} className="site-button-primary px-5 py-3 text-sm">
@@ -250,7 +250,7 @@ const PropertyDetailPage = () => {
   ].filter(Boolean);
 
   return (
-    <main className="w-full space-y-6 px-4 py-6 sm:px-5 lg:px-6">
+    <main className="page-shell-muted w-full space-y-6 px-4 py-6 sm:px-5 lg:px-6">
       <SeoHead
         title={`${p.title} in ${p.location?.area || p.location?.city || "Hosur"} - ${currency(p.price)}`}
         description={truncateText(p.description || `${p.propertyType} in ${p.location?.area}, ${p.location?.city} listed on MyHosurProperty.`, 160)}
@@ -262,7 +262,7 @@ const PropertyDetailPage = () => {
       />
       <section
         ref={heroRef}
-        className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_12px_30px_rgba(17,17,17,0.04)] md:p-6 lg:p-8"
+        className="marketing-card p-5 md:p-6 lg:p-8"
       >
         <div className="grid gap-8 lg:grid-cols-[1.22fr_0.78fr]">
           <div data-property-hero className="min-w-0">
@@ -280,13 +280,10 @@ const PropertyDetailPage = () => {
             <ImageGallery images={p.images} property={p} />
           </div>
 
-          <aside data-property-hero className="site-section h-fit p-6 md:p-7">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-              <SparklesIcon className="h-4 w-4" />
-              Property overview
-            </div>
+          <aside data-property-hero className="marketing-card h-fit p-6 md:p-7">
+            <p className="section-tag">Property overview</p>
 
-            <h1 className="mt-4 text-4xl font-semibold leading-[1.08] tracking-[-0.04em] text-slate-900">{p.title}</h1>
+            <h1 className="mt-4 text-3xl font-bold leading-tight text-navy sm:text-4xl">{p.title}</h1>
             <p className="mt-4 inline-flex items-center gap-2 text-sm text-slate-600">
               <MapPinIcon className="h-4 w-4 text-slate-400" />
               {p.location?.area}, {p.location?.city}
@@ -295,8 +292,8 @@ const PropertyDetailPage = () => {
               Listed by {p.ownerId?.name || "Owner"} ({p.ownerId?.role || p.listingSource || "owner"})
             </p>
 
-            <div className="mt-6 rounded-[1.6rem] border border-slate-200 bg-slate-50 p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Price</p>
+            <div className="mt-6 rounded-xl border border-slate-200 bg-surface p-5">
+              <p className="section-tag">Price</p>
               <p className="mt-2 text-4xl font-semibold tracking-tight text-slate-900">{currency(p.price)}</p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-[1.15rem] border border-slate-200 bg-white px-4 py-3">
@@ -370,7 +367,7 @@ const PropertyDetailPage = () => {
           whileInView="show"
           viewport={{ once: true, amount: 0.15 }}
           variants={fadeUp}
-          className="site-section p-6 md:p-8"
+          className="marketing-card p-6 md:p-8"
         >
           <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Overview</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">About this property</h2>
@@ -405,7 +402,7 @@ const PropertyDetailPage = () => {
           whileInView="show"
           viewport={{ once: true, amount: 0.15 }}
           variants={fadeUp}
-          className="site-section p-4 md:p-5"
+          className="marketing-card p-4 md:p-5"
         >
           <h2 className="px-2 pt-2 text-3xl font-semibold tracking-tight text-slate-900">Map view</h2>
           <p className="px-2 pt-2 text-sm text-slate-500">See how the property sits within the surrounding Hosur pocket.</p>
@@ -424,7 +421,7 @@ const PropertyDetailPage = () => {
         whileInView="show"
         viewport={{ once: true, amount: 0.15 }}
         variants={fadeUp}
-        className="site-section p-6 md:p-8"
+        className="marketing-card p-6 md:p-8"
       >
         <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Locality insights</p>
         <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Signals around the area</h2>
@@ -467,7 +464,7 @@ const PropertyDetailPage = () => {
         </div>
       </section>
 
-      <section className="site-section p-6 md:p-8">
+      <section className="marketing-card p-6 md:p-8">
         <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Property FAQs</p>
         <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Questions buyers usually ask before contacting the owner</h2>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -480,7 +477,7 @@ const PropertyDetailPage = () => {
         </div>
       </section>
 
-      <section className="site-section p-6 md:p-8">
+      <section className="marketing-card p-6 md:p-8">
         <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Explore more</p>
         <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Keep browsing related Hosur property pages</h2>
         <div className="mt-5 flex flex-wrap gap-3">

@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import useAuth from "../hooks/useAuth";
 import { fetchPropertyById } from "../services/api/propertyApi";
 import PropertyPostingForm from "../components/PropertyPostingForm";
+import PageHero from "../components/PageHero";
+import PageSection from "../components/PageSection";
 
 const EditPropertyPage = () => {
   const { id } = useParams();
@@ -17,8 +19,7 @@ const EditPropertyPage = () => {
       try {
         const res = await fetchPropertyById(id, token);
         const p = res.property;
-        
-        // Transform backend property to form format
+
         const initialForm = {
           title: p.title || "",
           description: p.description || "",
@@ -59,28 +60,28 @@ const EditPropertyPage = () => {
     load();
   }, [id, token, navigate]);
 
-  if (loading) return (
-    <div className="flex h-screen items-center justify-center text-ink/60">
-      Loading property details...
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center text-navy/60">
+        Loading property details...
+      </div>
+    );
+  }
 
   if (!property) return null;
 
   return (
-    <main className="w-full space-y-8 px-4 py-8 sm:px-5 md:py-12 lg:px-6">
-      <section className="site-section p-8 md:p-10">
-        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Listing management</p>
-        <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900">Edit your property details</h1>
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">
-          Update pricing, media, location, and listing information from one professional form.
-        </p>
-      </section>
-      <PropertyPostingForm 
-        heading="Edit Property Details" 
-        initialData={property} 
-        onSuccess={() => navigate("/dashboard")}
+    <main className="page-shell w-full">
+      <PageHero
+        tag="Listing management"
+        title="Edit your property details"
+        description="Update pricing, media, location, and listing information from one professional form."
       />
+      <PageSection tone="surface" className="!pt-0">
+        <div className="marketing-card rounded-xl p-4 sm:p-6">
+          <PropertyPostingForm heading="Edit Property Details" initialData={property} onSuccess={() => navigate("/dashboard")} />
+        </div>
+      </PageSection>
     </main>
   );
 };

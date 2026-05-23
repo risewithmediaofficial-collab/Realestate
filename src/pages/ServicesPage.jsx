@@ -270,7 +270,7 @@ const ServicesPage = () => {
   }, [search]);
 
   return (
-    <main className="w-full space-y-6 px-4 py-6 sm:px-5 md:space-y-8 md:py-8 lg:px-6">
+    <main className="page-shell w-full">
       <SeoHead
         title="My Hosur Property - Our Services"
         description="Complete property solutions from My Hosur Property, including buying, selling, loans, registration, construction, and legal support."
@@ -283,39 +283,39 @@ const ServicesPage = () => {
         initial="hidden"
         animate="show"
         variants={reveal}
-        className="rounded-[2rem] border border-slate-200 bg-white px-6 py-8 shadow-[0_12px_30px_rgba(17,17,17,0.04)] sm:px-8 lg:px-10 lg:py-12"
+        className="marketing-hero px-6 py-10 sm:px-8 lg:px-10 lg:py-14"
       >
         <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
           <div className="max-w-3xl">
             <motion.div variants={reveal} custom={0.05} className="site-kicker">
               My Hosur Property - Our Services
             </motion.div>
-            <motion.h1 variants={reveal} custom={0.1} className="mt-5 text-4xl font-semibold leading-[1.03] tracking-[-0.04em] text-slate-900 sm:text-5xl lg:text-6xl">
+            <motion.h1 variants={reveal} custom={0.1} className="mt-5 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
               Complete property solutions for every stage of your real-estate journey.
             </motion.h1>
-            <motion.p variants={reveal} custom={0.15} className="mt-5 max-w-3xl text-base leading-8 text-slate-600">
+            <motion.p variants={reveal} custom={0.15} className="mt-5 max-w-3xl text-base leading-8">
               Complete Property Solutions - From Buying & Selling to Loans, Registration, Construction, and Legal Support.
             </motion.p>
           </div>
 
           <motion.div variants={reveal} custom={0.2} className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
-              <p className="text-3xl font-semibold text-slate-900">
+            <div className="stat-card text-center">
+              <p className="stat-value">
                 <CountUpNumber value={serviceCategories.length} />
               </p>
-              <p className="mt-2 text-sm text-slate-500">Core service categories</p>
+              <p className="stat-label">Core service categories</p>
             </div>
-            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
-              <p className="text-3xl font-semibold text-slate-900">
+            <div className="stat-card text-center">
+              <p className="stat-value">
                 <CountUpNumber value={42} suffix="+" />
               </p>
-              <p className="mt-2 text-sm text-slate-500">Specialized support services</p>
+              <p className="stat-label">Specialized support services</p>
             </div>
-            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
-              <p className="text-3xl font-semibold text-slate-900">
+            <div className="stat-card text-center">
+              <p className="stat-value">
                 <CountUpNumber value={1} />
               </p>
-              <p className="mt-2 text-sm text-slate-500">Trusted platform partner</p>
+              <p className="stat-label">Trusted platform partner</p>
             </div>
           </motion.div>
         </div>
@@ -326,16 +326,17 @@ const ServicesPage = () => {
         whileInView="show"
         viewport={{ once: true, amount: 0.18 }}
         variants={reveal}
-        className="rounded-[2rem] border border-slate-200 bg-slate-50 px-5 py-6 sm:px-6 lg:px-8"
+        className="bg-surface px-5 py-10 sm:px-8 lg:px-10"
       >
+        <div className="mx-auto max-w-[1440px]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Search services</p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Find the service that matches your property need.</h2>
+            <p className="section-tag">Search services</p>
+            <h2 className="mt-2 text-2xl font-bold text-navy sm:text-3xl lg:text-4xl">Find the service that matches your property need.</h2>
           </div>
           <div className="w-full max-w-md">
-            <div className="flex items-center gap-3 rounded-[1.1rem] border border-slate-200 bg-white px-4 py-3">
-              <MagnifyingGlassIcon className="h-5 w-5 text-slate-400" />
+            <div className="flex min-h-[52px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-card">
+              <MagnifyingGlassIcon className="h-5 w-5 text-orange" />
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -346,7 +347,7 @@ const ServicesPage = () => {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-6 grid items-start gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {filteredServices.map((category, index) => {
             const CategoryIcon = category.icon;
             return (
@@ -354,63 +355,51 @@ const ServicesPage = () => {
                 key={category.key}
                 variants={reveal}
                 custom={index * 0.05}
-                className="rounded-[1.8rem] border border-slate-200 bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-slate-900"
+                className="marketing-card w-full p-5 transition duration-300 hover:-translate-y-1 hover:border-orange sm:p-6"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-900">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-navy text-white">
                   <CategoryIcon className="h-5 w-5" />
                 </div>
-                <h3 className="mt-5 text-2xl font-semibold tracking-tight text-slate-900">{category.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{category.description}</p>
+                <h3 className="mt-4 text-lg font-bold text-navy sm:text-xl">{category.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{category.description}</p>
 
-                <div className="mt-5 space-y-3">
+                <div className="mt-4 space-y-2">
                   {category.services.map((service) => {
                     const ServiceIcon = service.icon;
                     return (
-                      <div key={service.label} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-900">
+                      <div
+                        key={service.label}
+                        className="flex w-full items-center gap-2.5 rounded-lg border border-slate-200 bg-surface px-3 py-2"
+                      >
+                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-navy text-white">
                           <ServiceIcon className="h-4 w-4" />
                         </div>
-                        <p className="text-sm font-medium text-slate-700">{service.label}</p>
+                        <p className="min-w-0 flex-1 text-sm font-medium leading-snug text-navy">{service.label}</p>
                       </div>
                     );
                   })}
                 </div>
 
-                <Link to="/contact" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition hover:text-slate-600">
-                  Learn More
+                <Link to="/contact" className="link-orange mt-5 inline-flex items-center gap-2">
+                  Contact Us
                   <SparklesIcon className="h-4 w-4" />
                 </Link>
               </motion.article>
             );
           })}
         </div>
+        </div>
       </MotionSection>
 
-      {/* Zigzag Service Highlights with Images */}
-      <div className="space-y-8 md:space-y-12">
-        <div className="text-center">
-          <motion.p
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={reveal}
-            custom={0.05}
-            className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500"
-          >
-            Our Core Expertise
-          </motion.p>
-          <motion.h2
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={reveal}
-            custom={0.1}
-            className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl"
-          >
+      <div className="space-y-8 bg-white px-5 py-12 sm:px-8 md:space-y-10 lg:px-10">
+        <div className="mx-auto max-w-[1440px] text-center">
+          <p className="section-tag">Our Core Expertise</p>
+          <h2 className="mt-2 text-2xl font-bold text-navy sm:text-3xl lg:text-4xl">
             Comprehensive Services with Professional Excellence
-          </motion.h2>
+          </h2>
         </div>
 
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-8 md:gap-10">
         {serviceHighlights.map((service) => {
           const isImageRight = service.imagePosition === "right";
           return (
@@ -420,9 +409,9 @@ const ServicesPage = () => {
               whileInView="show"
               viewport={{ once: true, amount: 0.3 }}
               variants={reveal}
-              className="rounded-[2rem] border border-slate-200 bg-white shadow-[0_12px_30px_rgba(17,17,17,0.04)] overflow-hidden"
+              className="marketing-card w-full overflow-hidden p-0 hover:border-orange"
             >
-              <div className="grid gap-0 lg:grid-cols-2 lg:items-center">
+              <div className="grid lg:grid-cols-2 lg:items-stretch">
                 {/* Content Section */}
                 <motion.div
                   variants={isImageRight ? fadeInFromLeft : fadeInFromRight}
@@ -433,10 +422,8 @@ const ServicesPage = () => {
                   className={`p-6 sm:p-8 lg:p-10 ${!isImageRight ? "lg:order-2" : ""}`}
                 >
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                      Service #{service.id}
-                    </p>
-                    <h3 className="mt-3 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">
+                    <p className="section-tag">Service #{service.id}</p>
+                    <h3 className="mt-3 text-2xl font-bold leading-tight text-navy sm:text-3xl">
                       {service.title}
                     </h3>
                     <p className="mt-4 max-w-xl text-base leading-8 text-slate-600">
@@ -445,26 +432,26 @@ const ServicesPage = () => {
                   </div>
 
                   {/* Highlights with checkmarks */}
-                  <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                  <div className="mt-6 grid gap-2 sm:grid-cols-2">
                     {service.highlights.map((highlight, idx) => (
-                      <div key={idx} className="flex items-start gap-3">
-                        <div className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-white">
+                      <div key={idx} className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-surface px-3 py-2">
+                        <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-orange text-white">
                           <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         </div>
-                        <span className="text-sm font-medium text-slate-700">{highlight}</span>
+                        <span className="text-sm font-medium leading-snug text-navy">{highlight}</span>
                       </div>
                     ))}
                   </div>
 
                   {/* CTA Button */}
-                  <div className="mt-8">
+                  <div className="mt-6">
                     <Link
                       to="/contact"
-                      className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-black"
+                      className="site-button-primary inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-bold"
                     >
-                      Learn More
+                      Contact Us
                       <SparklesIcon className="h-4 w-4" />
                     </Link>
                   </div>
@@ -477,7 +464,7 @@ const ServicesPage = () => {
                   whileInView="show"
                   viewport={{ once: true, amount: 0.3 }}
                   custom={0.1}
-                  className={`relative h-72 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 sm:h-96 lg:h-full ${!isImageRight ? "lg:order-1" : ""}`}
+                  className={`relative h-56 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 sm:h-64 lg:h-full lg:min-h-[260px] ${!isImageRight ? "lg:order-1" : ""}`}
                 >
                   <img
                     src={service.image}
@@ -489,6 +476,7 @@ const ServicesPage = () => {
             </motion.div>
           );
         })}
+        </div>
       </div>
 
       <MotionSection
@@ -496,20 +484,18 @@ const ServicesPage = () => {
         whileInView="show"
         viewport={{ once: true, amount: 0.2 }}
         variants={reveal}
-        className="rounded-[2rem] border border-slate-200 bg-white px-6 py-8 shadow-[0_12px_30px_rgba(17,17,17,0.04)] sm:px-8"
+        className="bg-navy px-5 py-12 text-white sm:px-8 lg:px-10"
       >
-        <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Need support</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-              Need Help Finding Your Property Solution?
-            </h2>
-            <p className="mt-4 max-w-2xl text-sm leading-8 text-slate-600 sm:text-base">
+        <div className="mx-auto grid max-w-[1440px] gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="text-center lg:text-left">
+            <p className="section-tag !text-orange">Need support</p>
+            <h2 className="mt-2 text-2xl font-bold sm:text-3xl lg:text-4xl">Need Help Finding Your Property Solution?</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-8 text-white/75 sm:text-base lg:mx-0">
               Connect with My Hosur Property for help across buying, selling, registration, finance, construction, and local property support.
             </p>
-            <p className="mt-5 text-sm font-semibold text-slate-900">My Hosur Property - Trusted Real Estate Partner</p>
+            <p className="mt-5 text-sm font-semibold text-orange">My Hosur Property - Trusted Real Estate Partner</p>
           </div>
-          <Link to="/contact" className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-black">
+          <Link to="/contact" className="site-button-primary inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-bold">
             Contact Us
           </Link>
         </div>

@@ -236,18 +236,18 @@ const ListingPage = () => {
     }));
 
   return (
-    <div className="flex min-h-screen w-full flex-col gap-5 px-4 py-6 sm:px-5 sm:py-8 md:flex-row md:gap-6 lg:px-6">
+    <div className="page-shell-muted flex min-h-screen w-full flex-col gap-5 px-4 py-6 sm:px-5 sm:py-8 md:flex-row md:gap-6 lg:px-6">
       <SeoHead
         title={listingTitle}
         description={listingDescription}
         keywords={`Hosur property listings, ${filters.propertyType || "property"} in ${filters.city || "Hosur"}, property for sale in Hosur, property for rent in Hosur`}
         canonicalPath={buildCanonicalListingQuery(filters)}
       />
-      <aside className="sticky top-24 hidden h-[calc(100vh-7rem)] w-80 shrink-0 overflow-y-auto rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,rgba(252,255,254,0.98),rgba(240,248,247,0.96))] p-5 shadow-[0_18px_38px_rgba(16,95,104,0.1)] md:block md:p-6">
+      <aside className="filter-panel sticky top-24 hidden h-[calc(100vh-7rem)] w-80 shrink-0 overflow-y-auto p-5 md:block md:p-6">
         <div className="mb-4 flex items-center justify-between gap-3 md:mb-6">
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Search studio</p>
-            <h2 className="mt-2 text-lg font-bold text-slate-900">Filter results</h2>
+            <p className="section-tag">Search studio</p>
+            <h2 className="mt-2 text-lg font-bold text-navy">Filter results</h2>
           </div>
           <button type="button" onClick={clearFilters} className="text-xs font-semibold text-slate-500 transition hover:text-slate-900 whitespace-nowrap">
             Reset
@@ -296,59 +296,59 @@ const ListingPage = () => {
       <section className="min-w-0 flex-1 space-y-6">
         <section
           ref={heroRef}
-          className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(234,247,245,0.92))] p-6 shadow-[0_16px_38px_rgba(16,95,104,0.08)] md:p-8"
+          className="marketing-hero p-6 md:p-8"
         >
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <div
                   data-listing-hero
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600"
+                  className="section-tag inline-flex items-center gap-2 rounded-full bg-orange/20 px-4 py-2"
                 >
                   <SparklesIcon className="h-4 w-4" />
                   Property catalog
                 </div>
                 <h1
                   data-listing-hero
-                  className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-slate-900 sm:text-5xl"
+                  className="mt-4 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl"
                 >
                   Browse verified Hosur listings in a cleaner, more premium flow.
                 </h1>
-                <p data-listing-hero className="mt-4 max-w-2xl text-sm leading-8 text-slate-600 sm:text-base">
+                <p data-listing-hero className="mt-4 max-w-2xl text-sm leading-8 sm:text-base">
                   Explore sale and rent inventory with calmer filters, stronger hierarchy, and a more editorial result grid.
                 </p>
               </div>
 
               <div data-listing-hero className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[1.4rem] border border-slate-200 bg-white px-5 py-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Results</p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-900">{data.total || data.items.length}</p>
+                <div className="rounded-xl bg-white/10 px-5 py-4 backdrop-blur-sm">
+                  <p className="text-xs uppercase tracking-[0.18em] text-white/60">Results</p>
+                  <p className="mt-2 text-2xl font-bold text-white">{data.total || data.items.length}</p>
                 </div>
-                <div className="rounded-[1.4rem] border border-slate-200 bg-white px-5 py-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Active filters</p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-900">{activeFilterCount}</p>
+                <div className="rounded-xl bg-white/10 px-5 py-4 backdrop-blur-sm">
+                  <p className="text-xs uppercase tracking-[0.18em] text-white/60">Active filters</p>
+                  <p className="mt-2 text-2xl font-bold text-white">{activeFilterCount}</p>
                 </div>
               </div>
             </div>
 
             <div
               data-listing-hero
-              className="flex flex-col gap-3 rounded-[1.6rem] border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-xl bg-white/10 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 items-start gap-3">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-900">
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-orange text-white">
                   <MagnifyingGlassIcon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-900">Showing matched inventory for your current search.</p>
-                  <p className="mt-1 text-sm text-slate-500">Adjust locality, price, or type to widen or sharpen the result set.</p>
+                  <p className="text-sm font-semibold text-white">Showing matched inventory for your current search.</p>
+                  <p className="mt-1 text-sm text-white/70">Adjust locality, price, or type to widen or sharpen the result set.</p>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setMobileFilterOpen(true)}
-                className="site-button-primary inline-flex items-center justify-center gap-2 px-4 py-3 text-sm md:hidden"
+                className="site-button-primary inline-flex w-full items-center justify-center gap-2 px-4 py-3 text-sm sm:w-auto md:hidden"
               >
                 <AdjustmentsHorizontalIcon className="h-4 w-4" />
                 Open filters
@@ -358,7 +358,7 @@ const ListingPage = () => {
             {activeFilterChips.length ? (
               <div data-listing-hero className="flex flex-wrap gap-2">
                 {activeFilterChips.map((chip) => (
-                  <span key={chip.key} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600">
+                  <span key={chip.key} className="rounded-full border border-white/30 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white">
                     {chip.label}: {chip.value}
                   </span>
                 ))}
@@ -389,8 +389,8 @@ const ListingPage = () => {
             ))}
           </MotionDiv>
         ) : (
-          <div ref={setRevealRef} className="rounded-[2rem] border border-slate-200 bg-white px-6 py-16 text-center shadow-[0_12px_30px_rgba(17,17,17,0.04)]">
-            <h3 className="text-3xl font-semibold tracking-tight text-slate-900">No properties found</h3>
+          <div ref={setRevealRef} className="marketing-card px-6 py-16 text-center">
+            <h3 className="text-2xl font-bold text-navy sm:text-3xl">No properties found</h3>
             <p className="mt-4 mx-auto max-w-xl text-sm leading-8 text-slate-600">
               Try widening your city, budget, or property-type filters to bring more inventory into view.
             </p>

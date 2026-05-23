@@ -35,22 +35,22 @@ const AdminLoginPage = () => {
   };
 
   return (
-    <main className="mx-auto max-w-md px-4 py-12">
-      <form onSubmit={onSubmit} className="form-modern glass-panel uiverse-card rounded-[28px] border border-slate-200 bg-white p-7 shadow-[0_18px_32px_rgba(17,17,17,0.05)]">
+    <main className="page-shell-muted mx-auto flex min-h-screen max-w-md items-center px-4 py-12">
+      <form onSubmit={onSubmit} className="marketing-card w-full p-7">
         <span className="content-chip"><ShieldCheckIcon className="h-3.5 w-3.5" />Secure Access</span>
-        <h1 className="mt-3 text-3xl font-extrabold">Admin Login</h1>
-        <p className="mt-1 text-sm text-ink/65">Use admin username/email and password.</p>
+        <h1 className="mt-3 text-3xl font-extrabold text-navy">Admin Login</h1>
+        <p className="mt-1 text-sm text-slate-600">Use admin username/email and password.</p>
 
         <div className="mt-5 space-y-3">
           <input
-            className="w-full rounded-2xl border border-slate-200 px-4 py-3"
+            className="site-input w-full"
             placeholder="Username or Email"
             value={form.username}
             onChange={(e) => onChange("username", e.target.value)}
             required
           />
           <input
-            className="w-full rounded-2xl border border-slate-200 px-4 py-3"
+            className="site-input w-full"
             placeholder="Password"
             type="password"
             value={form.password}
@@ -59,7 +59,7 @@ const AdminLoginPage = () => {
           />
         </div>
 
-        <button disabled={loading} className="uiverse-btn mt-5 w-full rounded-2xl bg-ink py-3 text-sm font-semibold text-stone disabled:opacity-60">
+        <button disabled={loading} className="site-button-primary mt-5 w-full rounded-lg py-3 text-sm font-bold disabled:opacity-60">
           {loading ? "Signing in..." : "Login as Admin"}
         </button>
       </form>

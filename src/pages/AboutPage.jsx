@@ -1,25 +1,11 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import {
-  ArrowRightIcon,
-  CheckCircleIcon,
-  ShieldCheckIcon,
-  UsersIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowRightIcon, CheckCircleIcon, ShieldCheckIcon, UsersIcon } from "@heroicons/react/24/outline";
 import CountUpNumber from "../components/CountUpNumber";
+import MarketingCard, { IconCircle } from "../components/MarketingCard";
+import PageHero from "../components/PageHero";
+import PageSection from "../components/PageSection";
 import SeoHead from "../components/SeoHead";
 import { buildBreadcrumbSchema, buildRealEstateAgentSchema } from "../utils/seo";
-
-const MotionSection = motion.section;
-
-const reveal = {
-  hidden: { opacity: 0, y: 28 },
-  show: (delay = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay },
-  }),
-};
 
 const stats = [
   { value: 2500, suffix: "+", label: "Verified listings" },
@@ -52,7 +38,7 @@ const AboutPage = () => {
   ];
 
   return (
-    <main className="w-full space-y-6 px-4 py-6 sm:px-5 md:space-y-8 md:py-8 lg:px-6">
+    <main className="page-shell w-full">
       <SeoHead
         title="About MyHosurProperty"
         description="Learn how MyHosurProperty combines verified listings, local real-estate support, and a professional digital experience for Hosur."
@@ -61,106 +47,77 @@ const AboutPage = () => {
         schema={[buildRealEstateAgentSchema(), buildBreadcrumbSchema(breadcrumbs)]}
       />
 
-      <MotionSection
-        initial="hidden"
-        animate="show"
-        variants={reveal}
-        className="rounded-[2rem] border border-slate-200 bg-white px-6 py-8 shadow-[0_12px_30px_rgba(17,17,17,0.04)] sm:px-8 lg:px-10 lg:py-12"
+      <PageHero
+        tag="About the platform"
+        title="A professional property platform designed around Hosur."
+        description="MyHosurProperty connects buyers, sellers, agents, builders, and service teams through a cleaner real-estate experience focused on verified listings, guided transactions, and trustworthy local support."
       >
-        <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div className="max-w-3xl">
-            <motion.div variants={reveal} custom={0.05} className="site-kicker">
-              About the platform
-            </motion.div>
-            <motion.h1 variants={reveal} custom={0.1} className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.03] tracking-[-0.04em] text-slate-900 sm:text-5xl lg:text-6xl">
-              A professional property platform designed around Hosur.
-            </motion.h1>
-            <motion.p variants={reveal} custom={0.15} className="mt-5 max-w-2xl text-base leading-8 text-slate-600">
-              MyHosurProperty connects buyers, sellers, agents, builders, and service teams through a cleaner real-estate experience focused on verified listings, guided transactions, and trustworthy local support.
-            </motion.p>
-            <motion.div variants={reveal} custom={0.2} className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Link to="/listings" className="site-button-primary rounded-2xl px-6 py-3.5 text-sm">
-                Browse Listings
-              </Link>
-              <Link to="/contact" className="site-button-secondary rounded-2xl px-6 py-3.5 text-sm">
-                Talk to Our Team
-              </Link>
-            </motion.div>
-          </div>
-
-          <motion.div variants={reveal} custom={0.15} className="grid gap-4">
-            <div className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white">
-              <img
-                src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80"
-                alt="Modern home exterior representing the MyHosurProperty platform"
-                className="h-[320px] w-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {stats.map((item) => (
-                <div key={item.label} className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-3xl font-semibold text-slate-900">
-                    <CountUpNumber value={item.value} suffix={item.suffix} />
-                  </p>
-                  <p className="mt-2 text-sm text-slate-500">{item.label}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </MotionSection>
-
-      <MotionSection
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.18 }}
-        variants={reveal}
-        className="grid gap-4 md:grid-cols-3"
-      >
-        {principles.map((item, index) => {
-          const Icon = item.icon;
-          return (
-            <motion.article
-              key={item.title}
-              variants={reveal}
-              custom={index * 0.05}
-              className="rounded-[1.7rem] border border-slate-200 bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-slate-900"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-900">
-                <Icon className="h-5 w-5" />
-              </div>
-              <h2 className="mt-5 text-2xl font-semibold tracking-tight text-slate-900">{item.title}</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
-            </motion.article>
-          );
-        })}
-      </MotionSection>
-
-      <MotionSection
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={reveal}
-        className="rounded-[2rem] border border-slate-200 bg-slate-50 px-6 py-8 sm:px-8"
-      >
-        <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Built for clarity</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-              A local real-estate platform that feels simple, premium, and trustworthy.
-            </h2>
-            <p className="mt-4 max-w-2xl text-sm leading-8 text-slate-600 sm:text-base">
-              We combine property discovery, documentation support, service assistance, and local market knowledge into one structured platform for Hosur.
-            </p>
-          </div>
-          <Link to="/services" className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-black">
-            Explore Our Services
-            <ArrowRightIcon className="h-4 w-4" />
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link to="/listings" className="site-button-primary rounded-lg px-6 py-3 text-sm font-bold">
+            Browse Listings
+          </Link>
+          <Link to="/contact" className="inline-flex items-center justify-center rounded-lg border-2 border-white px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10">
+            Talk to Our Team
           </Link>
         </div>
-      </MotionSection>
+      </PageHero>
+
+      <PageSection tone="surface" className="!py-10">
+        <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-start">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card">
+            <img
+              src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80"
+              alt="Modern home exterior representing the MyHosurProperty platform"
+              className="h-[280px] w-full object-cover sm:h-[320px]"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+            {stats.map((item) => (
+              <div key={item.label} className="stat-card text-center lg:text-left">
+                <p className="stat-value">
+                  <CountUpNumber value={item.value} suffix={item.suffix} />
+                </p>
+                <p className="stat-label">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </PageSection>
+
+      <PageSection tag="Our principles" title="Built for trust and clarity in Hosur real estate">
+        <div className="grid gap-6 md:grid-cols-3">
+          {principles.map((item) => {
+            const Icon = item.icon;
+            return (
+              <MarketingCard key={item.title} className="text-center sm:text-left">
+                <IconCircle className="mx-auto sm:mx-0">
+                  <Icon className="h-6 w-6" />
+                </IconCircle>
+                <h3 className="mt-5 text-xl font-bold text-navy">{item.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
+              </MarketingCard>
+            );
+          })}
+        </div>
+      </PageSection>
+
+      <PageSection tone="navy" innerClassName="lg:flex lg:items-center lg:justify-between lg:gap-8">
+        <div className="text-center lg:text-left">
+          <p className="section-tag !text-orange">Built for clarity</p>
+          <h2 className="mt-2 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
+            A local real-estate platform that feels simple, premium, and trustworthy.
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-8 text-white/75 sm:text-base lg:mx-0">
+            We combine property discovery, documentation support, service assistance, and local market knowledge into one structured platform for Hosur.
+          </p>
+        </div>
+        <Link to="/services" className="site-button-primary mt-6 inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-bold lg:mt-0">
+          Explore Our Services
+          <ArrowRightIcon className="h-4 w-4" />
+        </Link>
+      </PageSection>
     </main>
   );
 };

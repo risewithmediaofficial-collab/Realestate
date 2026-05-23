@@ -438,21 +438,21 @@ const AuthPage = () => {
           width: 100%;
           min-height: 58px;
           border: none;
-          border-radius: 16px;
-          background: #111111;
+          border-radius: 10px;
+          background: #e67e22;
           color: #ffffff;
           font-size: 16px;
           font-weight: 700;
           font-family: inherit;
           letter-spacing: 0.2px;
           cursor: pointer;
-          transition: background 0.18s ease, opacity 0.18s ease, transform 0.3s ease, box-shadow 0.3s ease;
-          box-shadow: 0 10px 22px rgba(17, 17, 17, 0.08);
+          transition: background 0.18s ease, opacity 0.18s ease, transform 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: 0 4px 14px rgba(230, 126, 34, 0.35);
         }
         .auth-submit:hover:not(:disabled) {
-          background: #222222;
-          transform: translateY(-6px);
-          box-shadow: 0 18px 30px rgba(17, 17, 17, 0.14);
+          background: #cf6d12;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(230, 126, 34, 0.4);
         }
         .auth-submit:disabled {
           opacity: 0.7;

@@ -8,6 +8,7 @@ import {
   Bars3Icon,
   BuildingOffice2Icon,
   BriefcaseIcon,
+  EnvelopeIcon,
   HomeIcon,
   InformationCircleIcon,
   PhoneIcon,
@@ -33,17 +34,13 @@ const Navbar = () => {
   useBodyScrollLock(mobileMenuOpen);
 
   const closeMenu = () => setMobileMenuOpen(false);
-  
+
   const scrollToTop = () => {
-    // Temporarily disable smooth scroll for immediate scroll to top
     const htmlElement = document.documentElement;
     const originalScroll = htmlElement.style.scrollBehavior;
-    htmlElement.style.scrollBehavior = 'auto';
-    
+    htmlElement.style.scrollBehavior = "auto";
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
-    
-    // Restore smooth scroll after a brief delay
     setTimeout(() => {
       htmlElement.style.scrollBehavior = originalScroll;
     }, 50);
@@ -58,37 +55,23 @@ const Navbar = () => {
 
   const navLinks = useMemo(() => primaryNavLinks, []);
 
-  const renderDesktopLink = (item) => {
-    return (
-      <NavLink
-        key={item.to}
-        to={item.to}
-        onClick={scrollToTop}
-        className={({ isActive }) =>
-          `group relative inline-flex items-center rounded-md px-3 py-2 text-xs font-semibold transition ${
-            isActive
-              ? "bg-white/10 text-white"
-              : "text-white/70 hover:bg-white/10 hover:text-white"
-          }`
-        }
-      >
-        {({ isActive }) => (
-          <>
-            <span>{item.label}</span>
-            <span
-              className={`absolute inset-x-3 bottom-1 h-px origin-left bg-white transition duration-300 ${
-                isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-              }`}
-            />
-          </>
-        )}
-      </NavLink>
-    );
-  };
+  const renderDesktopLink = (item) => (
+    <NavLink
+      key={item.to}
+      to={item.to}
+      onClick={scrollToTop}
+      className={({ isActive }) =>
+        `relative inline-flex items-center px-3 py-2 text-sm font-semibold transition ${
+          isActive ? "text-orange" : "text-navy hover:text-orange"
+        }`
+      }
+    >
+      {item.label}
+    </NavLink>
+  );
 
   const renderMobileLink = (item) => {
     const Icon = navIconMap[item.label] || HomeIcon;
-
     return (
       <NavLink
         key={item.to}
@@ -98,153 +81,195 @@ const Navbar = () => {
           closeMenu();
         }}
         className={({ isActive }) =>
-          `flex items-center gap-3 rounded-md px-4 py-3 text-sm font-semibold transition ${
-            isActive ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
+          `flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition ${
+            isActive ? "bg-orange/10 text-orange" : "text-navy hover:bg-surface"
           }`
         }
       >
-        {({ isActive }) => (
-          <>
-            <Icon className={`h-5 w-5 ${isActive ? "text-white" : "text-white/50"}`} />
-            <span>{item.label}</span>
-          </>
-        )}
+        <Icon className="h-5 w-5" />
+        <span>{item.label}</span>
       </NavLink>
     );
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#06233b]">
-      <div className="px-5 py-3 sm:px-8 lg:px-10">
-        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-3 bg-transparent">
-          <NavLink
-            to="/"
-            onClick={() => {
-              scrollToTop();
-              closeMenu();
-            }}
-            className="inline-flex min-w-0 items-center gap-3 text-white"
-          >
-            <div className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center text-white">
-              <BuildingOffice2Icon className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-extrabold tracking-tight text-white">MyHosurProperty</p>
-              <p className="hidden truncate text-[9px] font-semibold uppercase tracking-[0.26em] text-white/55 sm:block">Real Estate</p>
-            </div>
-          </NavLink>
+    <header className="sticky top-0 z-50">
+      <div className="hidden bg-navy text-white sm:block">
+        <div className="mx-auto flex max-w-[1440px] items-center px-5 py-2.5 text-xs sm:px-8 lg:px-10">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+            <a href="tel:+919876543210" className="inline-flex items-center gap-2 transition hover:text-orange">
+              <PhoneIcon className="h-3.5 w-3.5 flex-shrink-0 text-orange" />
+              +91 98765 43210
+            </a>
+            <a href="mailto:support@myhosurproperty.com" className="inline-flex items-center gap-2 transition hover:text-orange">
+              <EnvelopeIcon className="h-3.5 w-3.5 flex-shrink-0 text-orange" />
+              support@myhosurproperty.com
+            </a>
+          </div>
+        </div>
+      </div>
 
-          <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">
-            {navLinks.map(renderDesktopLink)}
-          </nav>
-
-          <div className="hidden items-center gap-3 lg:flex">
+      <div className="border-b border-slate-200 bg-white shadow-sm">
+        <div className="px-5 py-3 sm:px-8 lg:px-10">
+          <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4">
             <NavLink
-              to={dashboardPath}
-              onClick={scrollToTop}
-              className={({ isActive }) =>
-                `group inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition ${
-                  isActive
-                    ? "bg-white/10 text-white"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
-                }`
-              }
-            >
-              {({ isActive }) => {
-                const DashboardIcon = isActive ? Squares2X2SolidIcon : Squares2X2Icon;
-                return (
-                  <>
-                    <DashboardIcon className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </>
-                );
+              to="/"
+              onClick={() => {
+                scrollToTop();
+                closeMenu();
               }}
+              className="inline-flex min-w-0 items-center gap-3"
+            >
+              <div className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-navy text-white">
+                <BuildingOffice2Icon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-base font-extrabold tracking-tight">
+                  <span className="text-navy">MyHosur</span>
+                  <span className="text-orange">Property</span>
+                </p>
+                <p className="hidden truncate text-[9px] font-semibold uppercase tracking-[0.22em] text-slate-500 sm:block">
+                  Real Estate
+                </p>
+              </div>
             </NavLink>
 
-            {isAuthenticated ? (
-              <button
-                onClick={onLogout}
-                className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-transparent px-3 py-2 text-xs font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-              >
-                <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                Logout
-              </button>
-            ) : (
-              <NavLink
-                to="/auth"
-                onClick={scrollToTop}
-                className="inline-flex items-center gap-2 rounded-md bg-[#0b74d1] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#075da8]"
-              >
-                <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                Sign in
-              </NavLink>
-            )}
-          </div>
+            <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">{navLinks.map(renderDesktopLink)}</nav>
 
-          <button
-            type="button"
-            className="inline-flex rounded-md border border-white/20 p-2 text-white transition hover:bg-white/10 lg:hidden"
-            onClick={() => setMobileMenuOpen((value) => !value)}
-          >
-            {mobileMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
-          </button>
+            <div className="hidden items-center gap-2 lg:flex">
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-navy transition hover:text-orange"
+                >
+                  <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                  Logout
+                </button>
+              ) : (
+                <>
+                  <NavLink
+                    to="/auth"
+                    onClick={scrollToTop}
+                    className="inline-flex items-center rounded-lg px-3 py-2 text-sm font-semibold text-navy transition hover:text-orange"
+                  >
+                    Login
+                  </NavLink>
+                  <span className="text-slate-300" aria-hidden="true">
+                    |
+                  </span>
+                  <NavLink
+                    to="/auth"
+                    onClick={scrollToTop}
+                    className="inline-flex items-center rounded-lg px-3 py-2 text-sm font-semibold text-navy transition hover:text-orange"
+                  >
+                    Register
+                  </NavLink>
+                </>
+              )}
+
+              <span className="mx-1 h-6 w-px bg-slate-200" aria-hidden="true" />
+
+              <NavLink
+                to={dashboardPath}
+                onClick={scrollToTop}
+                className={({ isActive }) =>
+                  `inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                    isActive ? "text-orange" : "text-navy hover:text-orange"
+                  }`
+                }
+              >
+                {({ isActive }) => {
+                  const DashboardIcon = isActive ? Squares2X2SolidIcon : Squares2X2Icon;
+                  return (
+                    <>
+                      <DashboardIcon className="h-4 w-4" />
+                      Dashboard
+                    </>
+                  );
+                }}
+              </NavLink>
+
+              <NavLink
+                to="/listings"
+                onClick={scrollToTop}
+                className="inline-flex items-center rounded-lg bg-orange px-5 py-2.5 text-sm font-bold text-white transition hover:bg-orange-hover"
+              >
+                Browse Listings
+              </NavLink>
+            </div>
+
+            <div className="flex items-center gap-2 lg:hidden">
+              {!isAuthenticated ? (
+                <NavLink
+                  to="/auth"
+                  onClick={scrollToTop}
+                  className="hidden items-center rounded-lg px-3 py-2 text-xs font-semibold text-navy transition hover:text-orange xs:inline-flex sm:text-sm"
+                >
+                  Login
+                </NavLink>
+              ) : null}
+              <button
+                type="button"
+                className="inline-flex rounded-lg border border-slate-200 p-2 text-navy transition hover:bg-surface"
+                onClick={() => setMobileMenuOpen((value) => !value)}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {mobileMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {mobileMenuOpen ? (
-        <div className="px-4 pb-3 sm:px-5 lg:hidden">
-          <div className="mx-auto max-h-[calc(100dvh-4.75rem)] max-w-[1440px] overflow-y-auto border-t border-white/10 bg-[#06233b] px-1 py-4 sm:px-2">
-            <div className="flex flex-col gap-3">
-              <nav className="flex flex-col gap-2">
-                {navLinks.map(renderMobileLink)}
+        <div className="border-b border-slate-200 bg-white px-4 pb-4 lg:hidden">
+          <div className="mx-auto max-h-[calc(100dvh-5rem)] max-w-[1440px] overflow-y-auto py-3">
+            <nav className="flex flex-col gap-1">{navLinks.map(renderMobileLink)}</nav>
+            <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4">
+              <NavLink
+                to={dashboardPath}
+                onClick={() => {
+                  scrollToTop();
+                  closeMenu();
+                }}
+                className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm font-semibold text-navy"
+              >
+                <Squares2X2Icon className="h-5 w-5" />
+                Dashboard
+              </NavLink>
+              <NavLink
+                to="/listings"
+                onClick={() => {
+                  scrollToTop();
+                  closeMenu();
+                }}
+                className="flex items-center justify-center rounded-lg bg-orange px-4 py-3 text-sm font-bold text-white"
+              >
+                Browse Listings
+              </NavLink>
+              {!isAuthenticated ? (
                 <NavLink
-                  to={dashboardPath}
+                  to="/auth"
                   onClick={() => {
                     scrollToTop();
                     closeMenu();
                   }}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-md px-4 py-3 text-sm font-semibold transition ${
-                      isActive ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
-                    }`
-                  }
+                  className="flex items-center justify-center gap-2 rounded-lg bg-navy px-4 py-3 text-sm font-semibold text-white"
                 >
-                  {({ isActive }) => {
-                    const DashboardIcon = isActive ? Squares2X2SolidIcon : Squares2X2Icon;
-                    return (
-                      <>
-                        <DashboardIcon className={`h-5 w-5 ${isActive ? "text-white" : "text-white/50"}`} />
-                        <span>Dashboard</span>
-                      </>
-                    );
-                  }}
+                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                  Sign in / Create account
                 </NavLink>
-              </nav>
-
-              <div className="pt-3 shadow-[inset_0_1px_0_rgba(16,95,104,0.07)]">
-                {isAuthenticated ? (
-                  <button
-                    type="button"
-                    onClick={onLogout}
-                    className="flex w-full items-center justify-center gap-2 rounded-md border border-white/20 bg-transparent px-4 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
-                  >
-                    <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                    Logout
-                  </button>
-                ) : (
-                  <NavLink
-                    to="/auth"
-                    onClick={() => {
-                      scrollToTop();
-                      closeMenu();
-                    }}
-                    className="flex items-center justify-center gap-2 rounded-md bg-[#0b74d1] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#075da8]"
-                  >
-                    <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                    Sign in / Create account
-                  </NavLink>
-                )}
-              </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm font-semibold text-navy"
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                  Logout
+                </button>
+              )}
             </div>
           </div>
         </div>

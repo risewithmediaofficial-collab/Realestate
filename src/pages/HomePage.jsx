@@ -5,10 +5,12 @@ import { motion } from "framer-motion";
 import {
   ArrowRightIcon,
   BuildingOffice2Icon,
+  BuildingOfficeIcon,
   CheckIcon,
-  CheckBadgeIcon,
   ChevronDownIcon,
   FlagIcon,
+  HomeIcon,
+  HomeModernIcon,
   MagnifyingGlassIcon,
   ScaleIcon,
   WrenchScrewdriverIcon,
@@ -16,11 +18,11 @@ import {
 import CountUpNumber from "../components/CountUpNumber";
 import PropertyCard from "../components/PropertyCard";
 import SeoHead from "../components/SeoHead";
-import AnimatedHeading from "../components/AnimatedHeading";
 import useDebounce from "../hooks/useDebounce";
 import useAuth from "../hooks/useAuth";
 import useScrollToTop from "../hooks/useScrollToTop";
-import realEstateBackground from "../assets/real-estate-background-hero.jpg";
+const HERO_BG =
+  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80";
 import { fetchHomeProperties } from "../services/api/propertyApi";
 import { buildRealEstateAgentSchema, buildWebsiteSchema } from "../utils/seo";
 
@@ -35,13 +37,6 @@ const reveal = {
   }),
 };
 
-const quickActions = [
-  { label: "Buy Property", to: "/listings?intent=buy" },
-  { label: "Rent Property", to: "/listings?intent=rent" },
-  { label: "Commercial", to: "/listings?intent=buy&propertyType=Commercial" },
-  { label: "Plots & Land", to: "/listings?intent=buy&propertyType=Plot" },
-];
-
 const propertyTypeOptions = [
   { label: "All types", value: "" },
   { label: "Plot", value: "Plot" },
@@ -51,6 +46,15 @@ const propertyTypeOptions = [
   { label: "Commercial Land", value: "Commercial Land" },
   { label: "Agricultural Land", value: "Agricultural Land" },
 ];
+
+const propertyTypeIcons = {
+  Plot: HomeIcon,
+  Villa: HomeModernIcon,
+  "Independent House": HomeIcon,
+  Flat: BuildingOfficeIcon,
+  "Commercial Land": BuildingOffice2Icon,
+  "Agricultural Land": HomeIcon,
+};
 
 const shortcutGroups = [
   {
@@ -215,7 +219,7 @@ const HomePage = () => {
   };
 
   return (
-    <main className="w-full bg-white">
+    <main className="page-shell w-full">
       <SeoHead
         title="Verified Property Listings in Hosur"
         description="Explore verified property listings, real-estate services, and professional local property support through My Hosur Property."
@@ -228,11 +232,131 @@ const HomePage = () => {
         initial="hidden"
         animate="show"
         variants={reveal}
-        className="relative z-30 bg-[#06233b] px-5 pb-12 pt-8 text-white sm:px-8 lg:px-10"
+        className="relative min-h-[380px] sm:min-h-[460px] lg:min-h-[500px]"
+        style={{
+          backgroundImage: `url(${HERO_BG})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
       >
-        <div className="mx-auto flex max-w-[1440px] flex-col gap-6">
-          <div className="relative z-40 flex flex-col gap-4 rounded-2xl bg-white/7 p-3 xl:flex-row xl:items-center xl:justify-between">
-            <div ref={shortcutBarRef} className="flex flex-wrap gap-3">
+        <div className="absolute inset-0 bg-navy/75" />
+
+        <div className="relative z-10 mx-auto flex max-w-[1440px] flex-col items-center px-5 py-12 text-center sm:px-8 sm:py-16 lg:px-10 lg:py-20">
+          <p className="section-tag !text-orange">Verified real estate platform</p>
+          <h1 className="hero-title mt-4 max-w-3xl text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
+            Verified property listings in <span className="text-orange">Hosur</span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/85 sm:mt-5 sm:text-base">
+            Find verified properties for sale and rent across Hosur. Search apartments, villas, plots, and houses with clearer tools and local support.
+          </p>
+
+          <div className="mt-6 flex w-full max-w-md flex-col gap-3 sm:mt-8 sm:max-w-none sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                scrollToTop();
+                navigate(`/listings?${queryString || "intent=buy"}`);
+              }}
+              className="site-button-primary w-full rounded-lg px-8 py-3 text-sm font-bold sm:w-auto"
+            >
+              Find Your Property
+            </button>
+            <Link
+              to="/contact"
+              className="inline-flex w-full items-center justify-center rounded-lg border-2 border-white px-8 py-3 text-sm font-bold text-white transition hover:bg-white/10 sm:w-auto"
+            >
+              Contact Us
+            </Link>
+          </div>
+
+          <div className="mt-8 grid w-full max-w-3xl grid-cols-3 gap-3 text-center sm:mt-10 sm:gap-6">
+            {homeStats.map((item) => (
+              <div key={item.label}>
+                <p className="text-xl font-bold text-white sm:text-2xl lg:text-3xl">
+                  <CountUpNumber value={item.value} suffix={item.suffix} />
+                </p>
+                <p className="mt-1 text-[11px] text-white/65 sm:text-sm">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </MotionSection>
+
+      <section className="bg-surface px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
+        <div className="mx-auto max-w-[1440px] space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-search sm:p-6">
+            <p className="mb-4 text-center text-sm font-semibold text-navy sm:text-left">Search properties in Hosur</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_0.9fr_auto] lg:items-stretch">
+              <div className="flex min-h-[52px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:col-span-2 lg:col-span-1">
+                <MagnifyingGlassIcon className="h-5 w-5 flex-shrink-0 text-orange" />
+                <input
+                  value={search.search}
+                  onChange={(event) => setSearch((prev) => ({ ...prev, search: event.target.value }))}
+                  placeholder="Search locality, project, or property name"
+                  className="min-w-0 w-full bg-transparent text-sm font-medium text-navy outline-none placeholder:text-slate-400"
+                />
+              </div>
+
+              <select
+                value={search.intent}
+                onChange={(event) => setSearch((prev) => ({ ...prev, intent: event.target.value }))}
+                className="site-input min-h-[52px] w-full rounded-xl text-sm"
+                aria-label="Listing intent"
+              >
+                <option value="buy">Buy</option>
+                <option value="rent">Rent</option>
+                <option value="new-project">New Project</option>
+              </select>
+
+              <div ref={propertyTypeMenuRef} className="relative w-full">
+                <button
+                  type="button"
+                  onClick={() => setPropertyTypeMenuOpen((current) => !current)}
+                  className="site-input flex min-h-[52px] w-full items-center justify-between rounded-xl text-left text-sm font-semibold"
+                  aria-expanded={propertyTypeMenuOpen}
+                  aria-haspopup="listbox"
+                >
+                  <span className="truncate">{selectedPropertyTypeLabel}</span>
+                  <ChevronDownIcon className={`h-4 w-4 flex-shrink-0 transition ${propertyTypeMenuOpen ? "rotate-180" : ""}`} />
+                </button>
+                {propertyTypeMenuOpen ? (
+                  <div
+                    className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-card"
+                    role="listbox"
+                  >
+                    {propertyTypeOptions.map((option) => (
+                      <button
+                        key={option.label}
+                        type="button"
+                        onClick={() => {
+                          setSearch((prev) => ({ ...prev, propertyType: option.value }));
+                          setPropertyTypeMenuOpen(false);
+                        }}
+                        className="flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-left text-sm font-semibold text-navy hover:bg-surface"
+                      >
+                        {option.label}
+                        {option.value === search.propertyType ? <CheckIcon className="h-4 w-4 text-orange" /> : null}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  scrollToTop();
+                  navigate(`/listings?${queryString || "intent=buy"}`);
+                }}
+                className="site-button-primary min-h-[52px] w-full rounded-xl px-8 text-sm font-bold lg:w-auto"
+              >
+                Search
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-card sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+            <div ref={shortcutBarRef} className="flex flex-wrap gap-2 sm:gap-3">
               {shortcutGroups.map((group) => (
                 <div
                   key={group.label}
@@ -243,24 +367,23 @@ const HomePage = () => {
                   <button
                     type="button"
                     onClick={() => setOpenShortcutMenu((current) => (current === group.label ? "" : group.label))}
-                    className={`inline-flex min-h-[54px] items-center gap-3 rounded-xl px-5 py-3 text-base font-extrabold transition sm:min-w-[118px] sm:justify-center ${
+                    className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition ${
                       openShortcutMenu === group.label
-                        ? "bg-white text-[#06233b]"
-                        : "bg-white/10 text-white hover:bg-white/18 hover:text-white"
+                        ? "bg-navy text-white"
+                        : "bg-surface text-navy hover:bg-orange/10 hover:text-orange"
                     }`}
                   >
-                    <span>{group.label}</span>
-                    <ChevronDownIcon className={`h-5 w-5 transition ${openShortcutMenu === group.label ? "rotate-180 text-[#06233b]" : "text-white/70"}`} />
+                    {group.label}
+                    <ChevronDownIcon className={`h-4 w-4 transition ${openShortcutMenu === group.label ? "rotate-180" : ""}`} />
                   </button>
-
                   {openShortcutMenu === group.label ? (
-                    <div className="absolute left-0 top-full z-50 min-w-[240px] pt-3">
-                      <div className="rounded-md border border-slate-200 bg-white p-2 shadow-[0_18px_36px_rgba(0,0,0,0.18)]">
+                    <div className="absolute left-0 top-full z-50 min-w-[220px] pt-2">
+                      <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-card">
                         {group.items.map((item) => (
                           <Link
                             key={`${group.label}-${item.label}`}
                             to={item.to}
-                            className="block rounded px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+                            className="block rounded-lg px-4 py-2.5 text-sm font-semibold text-navy transition hover:bg-surface hover:text-orange"
                             onClick={() => setOpenShortcutMenu("")}
                           >
                             {item.label}
@@ -272,214 +395,48 @@ const HomePage = () => {
                 </div>
               ))}
             </div>
-
             <button
               type="button"
               onClick={handlePostFreeProperty}
-              className="inline-flex min-h-[54px] shrink-0 items-center justify-center gap-2 rounded-xl bg-[#0b74d1] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#075da8]"
+              className="inline-flex min-h-[44px] w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-orange px-6 py-2.5 text-sm font-bold text-white transition hover:bg-orange-hover sm:w-auto"
             >
               <FlagIcon className="h-5 w-5" />
               Post your free property
             </button>
           </div>
-
-          <div className="mx-auto max-w-2xl pt-7 text-center">
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/55">Verified real estate platform</p>
-            <h1 className="mt-4 text-4xl font-extrabold leading-[1.03] tracking-[-0.04em] text-white sm:text-5xl">
-              Verified property listings in Hosur
-            </h1>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/70">
-              Find verified properties for sale and rent across Hosur. Search apartments, villas, plots, and houses with clearer tools and local support.
-            </p>
-          </div>
-
-          <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
-            <div className="flex items-center gap-3 rounded-md border border-white/10 bg-white px-4 py-3">
-              <MagnifyingGlassIcon className="h-5 w-5 text-slate-400" />
-              <input
-                value={search.search}
-                onChange={(event) => setSearch((prev) => ({ ...prev, search: event.target.value }))}
-                placeholder="Search locality, project, office, land, warehouse, or property name"
-                className="w-full bg-transparent text-sm font-medium text-slate-700 outline-none placeholder:text-slate-400"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                scrollToTop();
-                navigate(`/listings?${queryString || "intent=buy"}`);
-              }}
-              className="site-button-primary min-h-[48px] rounded-md px-6 text-sm"
-            >
-              Find Your Property
-            </button>
-
-            <Link
-              to="/post-property"
-              className="inline-flex min-h-[48px] items-center justify-center rounded-md border border-white/20 bg-transparent px-6 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              List Property
-            </Link>
-          </div>
-
-          <div className="mt-4 overflow-hidden">
-            <img
-              src={realEstateBackground}
-              alt="Modern real estate search experience in Hosur"
-              className="h-[260px] w-full object-cover sm:h-[360px]"
-              loading="eager"
-            />
-          </div>
-
-          <div className="grid gap-4 border-t border-white/10 pt-6 text-center sm:grid-cols-3">
-            {homeStats.map((item) => (
-              <div key={item.label}>
-                <p className="text-2xl font-semibold text-white">
-                  <CountUpNumber value={item.value} suffix={item.suffix} />
-                </p>
-                <p className="mt-1 text-xs text-white/55">{item.label}</p>
-              </div>
-            ))}
-          </div>
         </div>
-      </MotionSection>
+      </section>
 
       <MotionSection
         initial="hidden"
-        animate="show"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.18 }}
         variants={reveal}
-        className="hidden"
-        style={{
-          backgroundImage: `url(${realEstateBackground})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center center",
-        }}
+        className="bg-white px-5 py-16 sm:px-8 lg:px-10"
       >
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(248,252,252,0.9)_0%,rgba(248,252,252,0.76)_36%,rgba(248,252,252,0.3)_62%,rgba(15,69,77,0.14)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(15,69,77,0.06)_100%)]" />
-
-        <div className="relative z-10 flex min-h-[540px] flex-col justify-between gap-10 lg:min-h-[620px]">
-          <div className="max-w-3xl pt-2 lg:max-w-[52rem] lg:pt-6">
-            <motion.div variants={reveal} custom={0.05} className="site-kicker">
-              <CheckBadgeIcon className="h-4 w-4" />
-              Trusted property platform
-            </motion.div>
-            <motion.div variants={reveal} custom={0.1}>
-              <AnimatedHeading
-                as="h1"
-                text="Buy, sell, rent, and manage property with a cleaner real-estate experience."
-                className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.03] sm:text-5xl lg:text-6xl"
-              />
-            </motion.div>
-            <motion.p variants={reveal} custom={0.15} className="mt-5 max-w-2xl text-base leading-8 text-slate-600">
-              My Hosur Property brings verified listings, local guidance, and complete property support into one professional platform built for Hosur.
-            </motion.p>
-
-            <motion.div
-              ref={propertyTypeMenuRef}
-              variants={reveal}
-              custom={0.2}
-              className="relative z-40 mt-7 rounded-[1.75rem] border border-white/55 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(234,247,245,0.74))] p-3 shadow-[0_18px_36px_rgba(16,95,104,0.14)] backdrop-blur-md"
-            >
-              <div className="grid gap-3 lg:grid-cols-[1.1fr_0.7fr_0.6fr_auto]">
-                <div className="flex items-center gap-3 rounded-[1.1rem] border border-white/70 bg-white/90 px-4 py-3 backdrop-blur-sm">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-slate-400" />
-                  <input
-                    value={search.search}
-                    onChange={(event) => setSearch((prev) => ({ ...prev, search: event.target.value }))}
-                    placeholder="Search locality, project, property type, or landmark"
-                    className="w-full bg-transparent text-sm font-medium text-slate-700 outline-none placeholder:text-slate-400"
-                  />
-                </div>
-
-                <input
-                  value={search.city}
-                  onChange={(event) => setSearch((prev) => ({ ...prev, city: event.target.value }))}
-                  placeholder="City"
-                  className="site-input rounded-[1.1rem] bg-white text-sm"
-                />
-
-                <div className="relative z-40">
-                  <button
-                    type="button"
-                    onClick={() => setPropertyTypeMenuOpen((current) => !current)}
-                    className={`flex min-h-[56px] w-full items-center justify-between rounded-[1.1rem] border px-4 py-3 text-left text-sm font-semibold shadow-[0_10px_24px_rgba(16,95,104,0.08)] transition ${
-                      propertyTypeMenuOpen
-                        ? "border-slate-900 bg-[rgba(255,255,255,0.98)] text-slate-900"
-                        : "border-white/70 bg-white/92 text-slate-700 hover:border-slate-300 hover:bg-white"
-                    }`}
-                  >
-                    <span>{selectedPropertyTypeLabel}</span>
-                    <ChevronDownIcon className={`h-4 w-4 text-slate-500 transition ${propertyTypeMenuOpen ? "rotate-180 text-slate-700" : ""}`} />
-                  </button>
-
-                  {propertyTypeMenuOpen ? (
-                    <div className="absolute left-0 right-0 top-full z-50 mt-3 max-h-[260px] overflow-y-auto rounded-[1.3rem] border border-white/85 bg-[rgba(255,255,255,0.99)] p-2 shadow-[0_24px_50px_rgba(16,95,104,0.2)] backdrop-blur-xl">
-                      {propertyTypeOptions.map((option) => {
-                        const isSelected = option.value === search.propertyType;
-                        return (
-                          <button
-                            key={option.label}
-                            type="button"
-                            onClick={() => {
-                              setSearch((prev) => ({ ...prev, propertyType: option.value }));
-                              setPropertyTypeMenuOpen(false);
-                            }}
-                            className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
-                              isSelected
-                                ? "bg-[rgba(222,241,239,0.82)] text-slate-900"
-                                : "text-slate-600 hover:bg-[rgba(222,241,239,0.72)] hover:text-slate-900"
-                            }`}
-                          >
-                            <span>{option.label}</span>
-                            {isSelected ? <CheckIcon className="h-4 w-4 text-slate-700" /> : null}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : null}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    scrollToTop();
-                    navigate(`/listings?${queryString || "intent=buy"}`);
-                  }}
-                  className="site-button-primary min-h-[56px] rounded-[1.1rem] px-6 text-sm"
-                >
-                  Search
-                </button>
-              </div>
-            </motion.div>
-
-            <motion.div variants={reveal} custom={0.25} className="mt-6 flex flex-wrap gap-2">
-              {quickActions.map((item) => (
+        <div className="mx-auto max-w-[1440px] text-center">
+          <p className="section-tag">Property types</p>
+          <h2 className="mt-2 text-3xl font-bold text-navy sm:text-4xl">Explore property categories in Hosur</h2>
+        </div>
+        <div className="mx-auto mt-8 grid max-w-[1440px] grid-cols-2 gap-4 sm:mt-10 md:grid-cols-3 lg:grid-cols-6">
+          {propertyTypeOptions
+            .filter((option) => option.value)
+            .map((option) => {
+              const Icon = propertyTypeIcons[option.value] || BuildingOffice2Icon;
+              return (
                 <Link
-                  key={item.label}
-                  to={item.to}
-                  className="rounded-full border border-white/65 bg-white/82 px-4 py-2 text-sm font-semibold text-slate-700 shadow-[0_10px_24px_rgba(16,95,104,0.1)] backdrop-blur-sm transition hover:-translate-y-[6px] hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900"
+                  key={option.value}
+                  to={`/listings?intent=buy&propertyType=${encodeURIComponent(option.value)}`}
+                  className="property-type-card flex flex-col items-center p-6 text-center"
                 >
-                  {item.label}
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-navy text-white">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <p className="mt-4 text-base font-bold text-navy">{option.label}</p>
+                  <p className="mt-1 text-xs text-slate-500">Browse listings</p>
                 </Link>
-              ))}
-            </motion.div>
-          </div>
-
-          <motion.div variants={reveal} custom={0.3} className="relative z-10 grid gap-3 sm:grid-cols-3 lg:max-w-[52rem]">
-            {homeStats.map((item) => (
-              <div
-                key={item.label}
-                className="rounded-[1.45rem] border border-white/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.84),rgba(234,247,245,0.68))] p-4 shadow-[0_18px_30px_rgba(16,95,104,0.1)] backdrop-blur-md"
-              >
-                <p className="text-3xl font-semibold text-slate-900">
-                  <CountUpNumber value={item.value} suffix={item.suffix} />
-                </p>
-                <p className="mt-2 text-sm text-slate-500">{item.label}</p>
-              </div>
-            ))}
-          </motion.div>
+              );
+            })}
         </div>
       </MotionSection>
 
@@ -488,29 +445,35 @@ const HomePage = () => {
         whileInView="show"
         viewport={{ once: true, amount: 0.18 }}
         variants={reveal}
-        className="mx-auto grid max-w-[1440px] gap-10 px-5 py-16 text-center md:grid-cols-3 lg:px-10"
+        className="bg-surface px-5 py-16 sm:px-8 lg:px-10"
       >
-        {servicePreview.map((item, index) => {
-          const Icon = item.icon;
-          return (
-            <motion.article
-              key={item.title}
-              variants={reveal}
-              custom={index * 0.05}
-              className="bg-white p-2 transition duration-300 hover:-translate-y-1"
-            >
-              <div className="mx-auto flex h-10 w-10 items-center justify-center text-slate-900">
-                <Icon className="h-5 w-5" />
-              </div>
-              <h2 className="mt-5 text-2xl font-semibold tracking-tight text-slate-900">{item.title}</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
-              <Link to="/services" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition hover:text-slate-600">
-                Learn more
-                <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-            </motion.article>
-          );
-        })}
+        <div className="mx-auto max-w-[1440px] text-center">
+          <p className="section-tag">Our services</p>
+          <h2 className="mt-2 text-3xl font-bold text-navy sm:text-4xl">Complete property support for Hosur</h2>
+        </div>
+        <div className="mx-auto mt-10 grid max-w-[1440px] gap-6 md:grid-cols-3">
+          {servicePreview.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <motion.article
+                key={item.title}
+                variants={reveal}
+                custom={index * 0.05}
+                className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-card transition duration-300 hover:-translate-y-1 hover:border-orange"
+              >
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-navy text-white">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h2 className="mt-5 text-xl font-bold text-navy">{item.title}</h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
+                <Link to="/services" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-orange transition hover:text-orange-hover">
+                  Learn more
+                  <ArrowRightIcon className="h-4 w-4" />
+                </Link>
+              </motion.article>
+            );
+          })}
+        </div>
       </MotionSection>
 
       <MotionSection
@@ -518,31 +481,31 @@ const HomePage = () => {
         whileInView="show"
         viewport={{ once: true, amount: 0.18 }}
         variants={reveal}
-        className="border-t border-slate-200 bg-[#f6f6f3] px-5 py-16 sm:px-8 lg:px-10"
+        className="bg-white px-5 py-16 sm:px-8 lg:px-10"
       >
         <div className="mx-auto flex max-w-[1440px] flex-col gap-4 text-center sm:items-center">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Featured properties</p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Cleanly presented, ready to compare.</h2>
+            <p className="section-tag">Featured properties</p>
+            <h2 className="mt-2 text-3xl font-bold text-navy sm:text-4xl">Cleanly presented, ready to compare.</h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
               Browse verified homes, plots, and commercial properties arranged in a cleaner, more readable listing flow.
             </p>
           </div>
-          <Link to="/listings" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition hover:text-slate-600">
+          <Link to="/listings" className="inline-flex items-center gap-2 text-sm font-bold text-orange transition hover:text-orange-hover">
             View all listings
             <ArrowRightIcon className="h-4 w-4" />
           </Link>
         </div>
 
-        <div className="mx-auto mt-8 grid max-w-[1440px] gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mx-auto mt-8 grid max-w-[1440px] gap-6 md:grid-cols-2 xl:grid-cols-3">
           {featuredListings.map((item) => (
             <PropertyCard key={item._id} item={item} />
           ))}
 
           {featuredLoading &&
             Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="overflow-hidden border border-slate-200 bg-white p-4">
-                <div className="h-52 animate-pulse rounded-[1.2rem] bg-slate-100" />
+              <div key={index} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-card">
+                <div className="h-52 animate-pulse rounded-lg bg-slate-100" />
                 <div className="mt-4 h-5 animate-pulse rounded-full bg-slate-100" />
                 <div className="mt-3 h-4 w-2/3 animate-pulse rounded-full bg-slate-100" />
                 <div className="mt-5 h-10 animate-pulse rounded-full bg-slate-100" />
@@ -556,23 +519,21 @@ const HomePage = () => {
         whileInView="show"
         viewport={{ once: true, amount: 0.2 }}
         variants={reveal}
-        className="px-5 py-16 sm:px-8 lg:px-10"
+        className="bg-navy px-5 py-16 text-white sm:px-8 lg:px-10"
       >
         <div className="mx-auto grid max-w-[1440px] gap-5 text-center lg:grid-cols-[1fr_auto] lg:items-center lg:text-left">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Need expert help</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-              Complete property support beyond listings.
-            </h2>
-            <p className="mt-4 max-w-2xl text-sm leading-8 text-slate-600 sm:text-base">
+            <p className="section-tag text-orange">Need expert help</p>
+            <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Complete property support beyond listings.</h2>
+            <p className="mt-4 max-w-2xl text-sm leading-8 text-white/75 sm:text-base">
               From property search and loans to documentation, registration, construction, and local service coordination, our team helps you move with clarity.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Link to="/services" className="site-button-secondary rounded-2xl px-6 py-3 text-sm">
+            <Link to="/services" className="inline-flex items-center justify-center rounded-lg border-2 border-white px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10">
               Explore Services
             </Link>
-            <Link to="/contact" className="site-button-primary rounded-2xl px-6 py-3 text-sm">
+            <Link to="/contact" className="site-button-primary rounded-lg px-6 py-3 text-sm font-bold">
               Contact Us
             </Link>
           </div>

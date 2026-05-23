@@ -19,8 +19,8 @@ const FilterSidebar = ({ filters, setFilters, clearFilters }) => {
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">Refine search</p>
-        <h3 className="mt-2 text-lg font-bold text-slate-900">Property filters</h3>
+        <p className="section-tag">Refine search</p>
+        <h3 className="mt-2 text-lg font-bold text-navy">Property filters</h3>
       </div>
 
       <div className="space-y-4">

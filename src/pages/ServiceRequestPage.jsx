@@ -93,40 +93,40 @@ const ServiceRequestPage = () => {
   };
 
   return (
-    <main className="w-full px-4 py-8 sm:px-5 md:py-12 lg:px-6">
+    <main className="page-shell w-full px-4 py-8 sm:px-5 md:py-12 lg:px-6">
       <SeoHead
         title={`${categoryTitle} Request | MyHosurProperty`}
         description={`Submit your ${categoryTitle.toLowerCase()} request on MyHosurProperty and let our admin team contact you.`}
       />
 
       <section className="grid gap-6 lg:grid-cols-[0.96fr_1.04fr]">
-        <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-white p-8 shadow-[0_18px_40px_rgba(17,17,17,0.04)] md:p-10">
-          <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-500">Logged-in service desk</p>
-          <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl">{categoryTitle} request</h1>
+        <div className="marketing-card p-8 md:p-10">
+          <p className="section-tag">Logged-in service desk</p>
+          <h1 className="mt-3 text-3xl font-bold text-navy md:text-4xl lg:text-5xl">{categoryTitle} request</h1>
           <p className="mt-4 max-w-xl text-sm leading-8 text-slate-600">
             Submit what you need, and the request will go straight to admin so your team can contact you quickly with the right next steps.
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-              <ClipboardDocumentCheckIcon className="h-6 w-6 text-slate-900" />
-              <p className="mt-3 text-sm font-semibold text-slate-900">Admin tracked</p>
-              <p className="mt-1 text-xs leading-6 text-slate-500">Every request is stored in the admin dashboard.</p>
+            <div className="stat-card">
+              <ClipboardDocumentCheckIcon className="h-6 w-6 text-orange" />
+              <p className="mt-3 text-sm font-bold text-navy">Admin tracked</p>
+              <p className="mt-1 text-xs leading-6 text-slate-600">Every request is stored in the admin dashboard.</p>
             </div>
-            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-              <BuildingOffice2Icon className="h-6 w-6 text-slate-900" />
-              <p className="mt-3 text-sm font-semibold text-slate-900">Hosur focused</p>
-              <p className="mt-1 text-xs leading-6 text-slate-500">Share area and requirement details for better follow-up.</p>
+            <div className="stat-card">
+              <BuildingOffice2Icon className="h-6 w-6 text-orange" />
+              <p className="mt-3 text-sm font-bold text-navy">Hosur focused</p>
+              <p className="mt-1 text-xs leading-6 text-slate-600">Share area and requirement details for better follow-up.</p>
             </div>
-            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-              <WrenchScrewdriverIcon className="h-6 w-6 text-slate-900" />
-              <p className="mt-3 text-sm font-semibold text-slate-900">Service ready</p>
-              <p className="mt-1 text-xs leading-6 text-slate-500">Loan, interior, construction, buy, sell, and rent requests all work here.</p>
+            <div className="stat-card">
+              <WrenchScrewdriverIcon className="h-6 w-6 text-orange" />
+              <p className="mt-3 text-sm font-bold text-navy">Service ready</p>
+              <p className="mt-1 text-xs leading-6 text-slate-600">Loan, interior, construction, buy, sell, and rent requests all work here.</p>
             </div>
           </div>
         </div>
 
-        <form onSubmit={onSubmit} className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.08)] md:p-8">
+        <form onSubmit={onSubmit} className="marketing-card p-6 md:p-8">
           <div className="flex flex-wrap gap-2">
             {SERVICE_REQUEST_CATEGORY_LIST.map((item) => (
               <button
@@ -137,10 +137,10 @@ const ServiceRequestPage = () => {
                   setPropertyType(item.propertyTypes?.[0] || "");
                   setServiceType(item.serviceTypes?.[0] || "");
                 }}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                   requestCategory === item.requestCategory
-                    ? "bg-slate-900 text-white"
-                    : "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                    ? "bg-orange text-white"
+                    : "border border-slate-200 bg-white text-navy hover:border-orange hover:text-orange"
                 }`}
               >
                 {item.label}
@@ -236,14 +236,14 @@ const ServiceRequestPage = () => {
             />
           </label>
 
-          <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-            Requesting as <span className="font-semibold text-slate-900">{user?.name || "User"}</span>. Admin will use your registered phone and email to follow up.
+          <div className="mt-6 rounded-xl border border-slate-200 bg-surface p-4 text-sm text-slate-600">
+            Requesting as <span className="font-semibold text-navy">{user?.name || "User"}</span>. Admin will use your registered phone and email to follow up.
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="site-button-primary mt-6 inline-flex w-full items-center justify-center rounded-lg px-5 py-3.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? "Submitting request..." : "Submit request"}
           </button>

@@ -82,7 +82,7 @@ const AppShell = () => {
         <Toaster position="top-right" toastOptions={{ duration: 2500 }} />
         {isPrivatePath ? <PrivateRouteSeo title="Account" /> : null}
         {!hideNavbar && <Navbar />}
-        <main className={`flex-1 ${isFullHeight || hideNavbar ? "" : isHomeRoute ? "pb-12" : "pt-4 pb-12 md:pt-6"} ${isDashboardRoute ? "md:min-h-0 md:overflow-hidden" : ""}`}>
+        <main className={`flex-1 ${isFullHeight || hideNavbar ? "" : isHomeRoute ? "pb-0" : "pt-4 pb-12 md:pt-6"} ${isDashboardRoute ? "md:min-h-0 md:overflow-hidden" : ""}`}>
           <Suspense fallback={<RouteFallback />}>
             <AnimatePresence mode="wait">
               <motion.div
