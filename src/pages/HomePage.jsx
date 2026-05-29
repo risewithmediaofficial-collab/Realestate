@@ -238,6 +238,7 @@ const HomePage = () => {
   const featuredListings = featured.slice(0, 4);
   const selectedPropertyTypeLabel =
     propertyTypeOptions.find((option) => option.value === search.propertyType)?.label || "All types";
+  const openShortcutGroup = shortcutGroups.find((group) => group.label === openShortcutMenu);
 
   const handlePostFreeProperty = () => {
     scrollToTop();
@@ -249,6 +250,18 @@ const HomePage = () => {
 
     toast.success("Sign in to post your free property listing.");
     navigate("/auth", { state: { from: { pathname: "/post-property" } } });
+  };
+
+  const handleShortcutHover = (label) => {
+    if (window.matchMedia("(min-width: 640px)").matches) {
+      setOpenShortcutMenu(label);
+    }
+  };
+
+  const handleShortcutLeave = () => {
+    if (window.matchMedia("(min-width: 640px)").matches) {
+      setOpenShortcutMenu("");
+    }
   };
 
   return (
@@ -285,29 +298,29 @@ const HomePage = () => {
               Find verified properties for sale and rent across Hosur. Search apartments, villas, plots, and houses with clearer tools and local support.
             </p>
             
-            <div ref={shortcutBarRef} className="flex flex-wrap justify-center gap-2 sm:gap-2.5 lg:gap-3">
+            <div ref={shortcutBarRef} className="relative flex flex-wrap justify-center gap-2 sm:gap-2.5 lg:gap-3">
               {shortcutGroups.map((group) => (
                 <div
                   key={group.label}
                   className={`relative ${openShortcutMenu === group.label ? "z-50" : "z-10"}`}
-                  onMouseEnter={() => setOpenShortcutMenu(group.label)}
-                  onMouseLeave={() => setOpenShortcutMenu("")}
+                  onMouseEnter={() => handleShortcutHover(group.label)}
+                  onMouseLeave={handleShortcutLeave}
                 >
                   <button
                     type="button"
                     onClick={() => setOpenShortcutMenu((current) => (current === group.label ? "" : group.label))}
-                    className={`inline-flex min-h-[40px] items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition duration-200 ${
+                    className={`inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition duration-200 ${
                       openShortcutMenu === group.label
                         ? "bg-white text-navy shadow-lg"
                         : "bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:shadow-md border border-white/30"
                     }`}
                   >
-                    {group.label}
-                    <ChevronDownIcon className={`h-4 w-4 transition duration-300 ${openShortcutMenu === group.label ? "rotate-180" : ""}`} />
+                    <span>{group.label}</span>
+                    <ChevronDownIcon className={`h-4 w-4 transition duration-300 max-sm:!hidden sm:block ${openShortcutMenu === group.label ? "rotate-180" : ""}`} />
                   </button>
                   {openShortcutMenu === group.label ? (
-                    <motion.div 
-                      className="absolute left-0 top-full z-50 min-w-[220px] pt-2"
+                    <motion.div
+                      className="absolute left-0 top-full z-50 hidden min-w-[220px] pt-2 sm:block"
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
@@ -329,6 +342,28 @@ const HomePage = () => {
                   ) : null}
                 </div>
               ))}
+              {openShortcutGroup ? (
+                <motion.div
+                  className="z-50 mt-2 w-full basis-full sm:hidden"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <div className="mx-auto max-h-[260px] w-[min(18rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 text-center shadow-lg">
+                    {openShortcutGroup.items.map((item) => (
+                      <Link
+                        key={`${openShortcutGroup.label}-${item.label}`}
+                        to={item.to}
+                        className="block rounded-lg px-4 py-3 text-sm font-semibold leading-5 text-navy transition duration-150 hover:bg-orange/5 hover:text-orange"
+                        onClick={() => setOpenShortcutMenu("")}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </motion.div>
+              ) : null}
             </div>
 
             <div className="mt-4 flex w-full max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center mx-auto">
