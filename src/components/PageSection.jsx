@@ -28,8 +28,7 @@ const PageSection = ({
   <motion.section
     id={id}
     initial="hidden"
-    whileInView="show"
-    viewport={{ once: true, amount: 0.12 }}
+    animate="show"
     variants={reveal}
     className={`px-5 py-12 sm:px-8 sm:py-14 lg:px-10 ${tones[tone] || tones.white} ${className}`}
   >
