@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheckIcon, EnvelopeIcon, LockClosedIcon, PhoneIcon, MapPinIcon, UserIcon, UserCircleIcon } from "../components/AppIcons";
+import BrandLogo from "../components/BrandLogo";
 import { loginUser, signupUser } from "../services/api/authApi";
 import useAuth from "../hooks/useAuth";
 import useScrollToTop from "../hooks/useScrollToTop";
@@ -146,20 +147,16 @@ const AuthPage = () => {
         .auth-left-logo {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
-          padding: 8px 12px;
+          padding: 10px 14px;
           border: 1px solid #e5e7eb;
-          border-radius: 999px;
+          border-radius: 18px;
           background: #ffffff;
-          color: #555555;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 2px;
-          text-transform: uppercase;
+          box-shadow: 0 12px 30px rgba(0, 66, 162, 0.08);
           margin-bottom: 28px;
         }
-        .auth-left-logo span {
-          color: #111111;
+        .auth-left-logo-img {
+          width: 280px;
+          max-width: 100%;
         }
         .auth-left-heading {
           margin: 0 0 14px;
@@ -255,14 +252,10 @@ const AuthPage = () => {
         .auth-brand-mobile {
           display: none;
           margin-bottom: 18px;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          color: #0f172a;
         }
-        .auth-brand-mobile span {
-          color: #475569;
+        .auth-brand-mobile-img {
+          width: 220px;
+          max-width: 100%;
         }
         @media (max-width: 900px) {
           .auth-brand-mobile {
@@ -280,15 +273,11 @@ const AuthPage = () => {
         .auth-badge {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
           padding: 0;
-          border-radius: 999px;
-          background: transparent;
-          color: #64748b;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 1.2px;
-          text-transform: uppercase;
+        }
+        .auth-badge-logo {
+          width: 150px;
+          max-width: 40vw;
         }
         .auth-badge-icon {
           width: 14px;
@@ -439,7 +428,7 @@ const AuthPage = () => {
           min-height: 58px;
           border: none;
           border-radius: 10px;
-          background: #e67e22;
+          background: #f79e26;
           color: #ffffff;
           font-size: 16px;
           font-weight: 700;
@@ -447,12 +436,12 @@ const AuthPage = () => {
           letter-spacing: 0.2px;
           cursor: pointer;
           transition: background 0.18s ease, opacity 0.18s ease, transform 0.2s ease, box-shadow 0.2s ease;
-          box-shadow: 0 4px 14px rgba(230, 126, 34, 0.35);
+          box-shadow: 0 4px 14px rgba(247, 158, 38, 0.35);
         }
         .auth-submit:hover:not(:disabled) {
-          background: #cf6d12;
+          background: #d77f09;
           transform: translateY(-2px);
-          box-shadow: 0 6px 18px rgba(230, 126, 34, 0.4);
+          box-shadow: 0 6px 18px rgba(247, 158, 38, 0.4);
         }
         .auth-submit:disabled {
           opacity: 0.7;
@@ -557,8 +546,7 @@ const AuthPage = () => {
 
           <div className="auth-left-content">
             <div className="auth-left-logo">
-              <ShieldCheckIcon className="auth-badge-icon" />
-              My<span>Hosur</span>Property
+              <BrandLogo className="auth-left-logo-img" />
             </div>
             <h2 className="auth-left-heading">Find your perfect home in Hosur.</h2>
             <p className="auth-left-sub">
@@ -582,13 +570,14 @@ const AuthPage = () => {
 
         <div className="auth-right">
           <motion.div className={`auth-card ${isSignup ? "auth-card-signup" : ""}`} initial="hidden" animate="show" variants={fade}>
-            <div className="auth-brand-mobile">My<span>Hosur</span>Property</div>
+            <div className="auth-brand-mobile">
+              <BrandLogo className="auth-brand-mobile-img" />
+            </div>
 
             <div className="auth-card-surface">
               <div className="auth-topbar">
                 <div className="auth-badge">
-                  <ShieldCheckIcon className="auth-badge-icon" />
-                  MyHosurProperty
+                  <BrandLogo className="auth-badge-logo" />
                 </div>
                 <div className="auth-status">{statusText}</div>
               </div>

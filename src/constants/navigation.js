@@ -1,6 +1,7 @@
 export const primaryNavLinks = [
   { label: "Home", to: "/" },
   { label: "Our Services", to: "/services" },
+  { label: "Bank Loans", to: "/bank-loans" },
   { label: "Plans", to: "/plans" },
   { label: "About Us", to: "/about" },
   { label: "Contact", to: "/contact" },

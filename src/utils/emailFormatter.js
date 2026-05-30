@@ -1,7 +1,7 @@
 export const generateHtmlEmail = ({ name, title, message, buttonText, buttonUrl }) => {
   const brandName = "MyHosurProperty";
-  const primaryColor = "#1F2A44"; // Using the brand's 'ink' color
-  const accentColor = "#8BC3E6"; // Using the brand's 'sage' color
+  const primaryColor = "#0042a2"; // Using the brand's 'ink' color
+  const accentColor = "#f79e26"; // Using the brand's 'sage' color
 
   return `
     <div style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">

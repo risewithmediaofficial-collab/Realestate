@@ -1013,7 +1013,7 @@ const HomePage = () => {
         <div className="mx-auto grid max-w-[1440px] gap-5 text-center lg:grid-cols-[1fr_auto] lg:items-center lg:text-left">
           <div>
             <p className="section-tag text-orange">Need expert help</p>
-            <h2 className="mt-3 text-3xl font-bold sm:text-4xl">Complete property support beyond listings.</h2>
+            <h2 className="mt-3 text-3xl font-bold text-white sm:text-4xl">Complete property support beyond listings.</h2>
             <p className="mt-4 max-w-2xl text-sm leading-8 text-white sm:text-base">
               From property search and loans to documentation, registration, construction, and local service coordination, our team helps you move with clarity.
             </p>

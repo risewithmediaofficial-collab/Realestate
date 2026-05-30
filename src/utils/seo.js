@@ -17,7 +17,7 @@ export const SITE_KEYWORDS = [
   "MyHosurProperty",
 ].join(", ");
 export const DEFAULT_SITE_URL = "https://my-hosur-property.onrender.com";
-export const DEFAULT_OG_IMAGE = "/favicon.svg";
+export const DEFAULT_OG_IMAGE = "/logo.png";
 export const SITE_CONTACT_EMAIL = "myhosurproperty786@gmail.com";
 export const SITE_CONTACT_PHONE = "+91 9994005086";
 export const SITE_CONTACT_ADDRESS = "No 4 /409-4, First floor, Movendar Nagar, Vinayagapuram, Bagalur Road";

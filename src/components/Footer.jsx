@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom";
 import { primaryNavLinks } from "../constants/navigation";
 import { CONTACT_ADDRESS, CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL } from "../constants/contactInfo";
-import { BuildingOffice2Icon, EnvelopeIcon, MapPinIcon, PhoneIcon } from "./AppIcons";
+import BrandLogo from "./BrandLogo";
+import { EnvelopeIcon, MapPinIcon, PhoneIcon } from "./AppIcons";
 
 const serviceLinks = [
   { label: "Our Services", to: "/services" },
@@ -31,14 +32,8 @@ const Footer = () => (
         <div className="grid gap-8 lg:grid-cols-[1.15fr_1fr_1.1fr]">
           <div className="space-y-4 lg:col-span-1">
             <div className="flex items-center gap-3">
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-orange text-white">
-                <BuildingOffice2Icon className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-lg font-extrabold tracking-tight">
-                  MyHosur<span className="text-orange">Property</span>
-                </p>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white">Professional platform</p>
+              <div className="inline-flex rounded-xl bg-white px-3 py-2 shadow-sm">
+                <BrandLogo className="h-auto w-[240px] max-w-[72vw]" />
               </div>
             </div>
             <p className="max-w-sm text-sm leading-7 text-white">

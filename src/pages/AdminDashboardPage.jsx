@@ -656,7 +656,7 @@ const AdminDashboardPage = () => {
                     onClick={() => setLeadView(view.id)}
                     className={`rounded-[1.35rem] border px-4 py-4 text-left transition ${
                       leadView === view.id
-                        ? "border-slate-900 bg-[rgba(222,241,239,0.82)] shadow-[0_14px_28px_rgba(16,95,104,0.08)]"
+                        ? "border-slate-900 bg-[rgba(255,244,227,0.82)] shadow-[0_14px_28px_rgba(0,66,162,0.08)]"
                         : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                     }`}
                   >

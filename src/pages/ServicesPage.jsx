@@ -348,12 +348,12 @@ const ServicesPage = () => {
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, amount: 0.01 }}
-                className="group relative flex h-full min-h-[520px] w-full min-w-0 scroll-mt-32 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition duration-300 hover:-translate-y-1 hover:border-orange hover:shadow-[0_18px_42px_rgba(26,43,78,0.12)]"
+                className="group relative flex h-full min-h-[520px] w-full min-w-0 scroll-mt-32 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition duration-300 hover:-translate-y-1 hover:border-orange hover:shadow-[0_18px_42px_rgba(0,66,162,0.12)]"
               >
                 <div className="h-1.5 w-full bg-gradient-to-r from-orange via-orange to-navy" />
 
                 <div className="flex items-start gap-4 border-b border-slate-100 p-6">
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-navy text-white shadow-[0_10px_24px_rgba(26,43,78,0.18)] transition duration-300 group-hover:bg-orange">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-navy text-white shadow-[0_10px_24px_rgba(0,66,162,0.18)] transition duration-300 group-hover:bg-orange">
                     <CategoryIcon className="h-6 w-6" />
                   </div>
                   <div className="min-w-0 flex-1">

@@ -94,7 +94,7 @@ export const PrivateRouteSeo = ({ title = SITE_NAME }) => (
     noIndex
     canonicalPath={typeof window !== "undefined" ? window.location.pathname : "/"}
     description={`${title} on ${SITE_NAME}.`}
-    image={`${getSiteUrl()}/favicon.svg`}
+    image={`${getSiteUrl()}${DEFAULT_OG_IMAGE}`}
   />
 );
 

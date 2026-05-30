@@ -185,7 +185,7 @@ const PlansPage = () => {
         key={plan._id || plan.name}
         className={`relative flex h-full flex-col rounded-xl border p-6 shadow-card md:p-7 ${
           isRecommended
-            ? "border-navy bg-navy text-white shadow-[0_12px_32px_rgba(26,43,78,0.2)]"
+            ? "border-navy bg-navy text-white shadow-[0_12px_32px_rgba(0,66,162,0.2)]"
             : "border-slate-200 bg-white text-navy"
         }`}
       >

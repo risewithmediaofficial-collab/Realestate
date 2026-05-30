@@ -26,7 +26,7 @@ const PropertyCard = ({ item, onSave, isSaved, showOwner = true }) => {
   const listingLabel = item.listingType === "rent" ? "Rent" : item.listingType === "sale" ? "Sale" : item.listingType || "Property";
 
   return (
-    <article className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(26,43,78,0.12)]">
+    <article className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,66,162,0.12)]">
       <div className="relative h-56 overflow-hidden">
         <img
           src={item.images?.[0] || PROPERTY_PLACEHOLDER_IMAGE}

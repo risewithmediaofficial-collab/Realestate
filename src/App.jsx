@@ -25,6 +25,7 @@ const PostPropertyPage = lazy(() => import("./pages/PostPropertyPage"));
 const EditPropertyPage = lazy(() => import("./pages/EditPropertyPage"));
 const PlansPage = lazy(() => import("./pages/PlansPage"));
 const ServiceRequestPage = lazy(() => import("./pages/ServiceRequestPage"));
+const BankLoansPage = lazy(() => import("./pages/BankLoansPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 // Pages that manage their own full-height layout (sidebars etc.)
@@ -125,6 +126,7 @@ const AppShell = () => {
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/services" element={<ServicesPage />} />
+                  <Route path="/bank-loans" element={<BankLoansPage />} />
                   <Route path="/listings" element={<ListingPage />} />
                   <Route path="/property/:id/:slug?" element={<PropertyDetailPage />} />
                   <Route path="/auth" element={<AuthPage />} />

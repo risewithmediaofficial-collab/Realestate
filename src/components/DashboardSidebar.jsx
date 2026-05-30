@@ -1,3 +1,5 @@
+import BrandLogo from "./BrandLogo";
+
 const DashboardSidebar = ({
   title,
   subtitle,
@@ -20,7 +22,7 @@ const DashboardSidebar = ({
             {description ? <p className="dashboard-muted mt-3 text-sm leading-6">{description}</p> : null}
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col pt-4 shadow-[inset_0_1px_0_rgba(16,95,104,0.07)]">
+          <div className="flex min-h-0 flex-1 flex-col pt-4 shadow-[inset_0_1px_0_rgba(0,66,162,0.07)]">
             <p className="pb-3 text-[10px] font-bold uppercase tracking-[0.24em] text-slate-400">Dashboard sections</p>
             <nav className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1 pb-2">
               {navItems.map((item) => (
@@ -30,7 +32,7 @@ const DashboardSidebar = ({
                   onClick={() => item.onClick?.(item.key)}
                   className={`flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
                     item.active
-                      ? "bg-slate-50 text-slate-950 shadow-[0_12px_22px_rgba(16,95,104,0.06),inset_0_0_0_1px_rgba(16,95,104,0.1)]"
+                      ? "bg-slate-50 text-slate-950 shadow-[0_12px_22px_rgba(0,66,162,0.06),inset_0_0_0_1px_rgba(0,66,162,0.1)]"
                       : "bg-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                 >
@@ -48,14 +50,17 @@ const DashboardSidebar = ({
             </nav>
           </div>
 
-          <div className="pt-4 shadow-[inset_0_1px_0_rgba(16,95,104,0.06)]">
-            <p className="text-center text-xs tracking-[0.16em] text-slate-400">MyHosurProperty 2026</p>
+          <div className="pt-4 shadow-[inset_0_1px_0_rgba(0,66,162,0.06)]">
+            <div className="flex justify-center">
+              <BrandLogo className="h-auto w-[150px]" />
+            </div>
+            <p className="mt-2 text-center text-xs tracking-[0.16em] text-slate-400">2026</p>
           </div>
         </div>
       </aside>
 
-      <div className="sticky top-[4.5rem] z-20 w-full shrink-0 bg-white px-4 py-3 shadow-[0_12px_28px_rgba(16,95,104,0.08)] md:hidden">
-        <div className="mb-3 rounded-[24px] bg-white px-4 py-4 shadow-[inset_0_0_0_1px_rgba(16,95,104,0.07)]">
+      <div className="sticky top-[4.5rem] z-20 w-full shrink-0 bg-white px-4 py-3 shadow-[0_12px_28px_rgba(0,66,162,0.08)] md:hidden">
+        <div className="mb-3 rounded-[24px] bg-white px-4 py-4 shadow-[inset_0_0_0_1px_rgba(0,66,162,0.07)]">
           <p className="dashboard-kicker">{subtitle}</p>
           <h1 className="dashboard-display mt-2 text-[1.9rem] font-semibold leading-none text-slate-900">{title}</h1>
           {description ? <p className="dashboard-muted mt-2 text-sm leading-6">{description}</p> : null}
@@ -69,7 +74,7 @@ const DashboardSidebar = ({
               className={`flex-shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition ${
                 item.active
                   ? "bg-slate-900 text-white shadow-sm"
-                  : "bg-white text-slate-600 shadow-[inset_0_0_0_1px_rgba(16,95,104,0.08)] hover:bg-slate-50 hover:text-slate-900"
+                  : "bg-white text-slate-600 shadow-[inset_0_0_0_1px_rgba(0,66,162,0.08)] hover:bg-slate-50 hover:text-slate-900"
               }`}
             >
               <span className="flex items-center gap-1.5 whitespace-nowrap">

@@ -6,10 +6,10 @@ import useAuth from "../hooks/useAuth";
 import useBodyScrollLock from "../hooks/useBodyScrollLock";
 import { CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, CONTACT_PHONE_TEL } from "../constants/contactInfo";
 import { primaryNavLinks } from "../constants/navigation";
+import BrandLogo from "./BrandLogo";
 import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
-  BuildingOffice2Icon,
   BriefcaseIcon,
   ChevronDownIcon,
   EnvelopeIcon,
@@ -130,7 +130,7 @@ const Navbar = () => {
       </div>
 
       <div className="border-b border-slate-200 bg-white shadow-sm">
-        <div className="px-5 py-3 sm:px-8 lg:px-10">
+        <div className="px-5 py-2 sm:px-8 lg:px-10">
           <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4">
             <NavLink
               to="/"
@@ -138,23 +138,9 @@ const Navbar = () => {
                 scrollToTop();
                 closeMenu();
               }}
-              className="inline-flex min-w-0 items-center gap-3"
+              className="inline-flex min-w-0 items-center"
             >
-              <div className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-navy text-white">
-                <BuildingOffice2Icon className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-base font-extrabold tracking-tight">
-                  <span className="text-navy">MyHosur</span>
-                  <span className="text-orange">Property</span>
-                </p>
-                <p className="hidden truncate text-[9px] font-semibold uppercase tracking-[0.22em] text-slate-500 sm:block">
-                  Real Estate
-                </p>
-                <p className="hidden truncate text-[10px] font-semibold text-slate-500 sm:block">
-                  Powered by <span className="text-navy">GYES Construction</span>
-                </p>
-              </div>
+              <BrandLogo className="h-12 w-auto max-w-[150px] sm:h-14 sm:max-w-[170px]" />
             </NavLink>
 
             <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">{navLinks.map(renderDesktopLink)}</nav>
