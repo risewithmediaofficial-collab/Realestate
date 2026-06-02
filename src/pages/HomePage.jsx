@@ -24,7 +24,7 @@ import {
 } from "../components/AppIcons";
 import CountUpNumber from "../components/CountUpNumber";
 import PropertyCard from "../components/PropertyCard";
-import LocalitySearch from "../components/LocalitySearch";
+import LocalityDropdown from "../components/LocalityDropdown";
 import SeoHead from "../components/SeoHead";
 import useDebounce from "../hooks/useDebounce";
 import useAuth from "../hooks/useAuth";
@@ -185,6 +185,7 @@ const HomePage = () => {
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const [openShortcutMenu, setOpenShortcutMenu] = useState("");
   const [propertyTypeMenuOpen, setPropertyTypeMenuOpen] = useState(false);
+  const [localityDropdownOpen, setLocalityDropdownOpen] = useState(false);
   const homeRootRef = useRef(null);
   const heroRef = useRef(null);
   const heroBgRef = useRef(null);
@@ -577,18 +578,22 @@ const HomePage = () => {
 
       <section className="home-gsap-section relative bg-gradient-to-b from-slate-50 to-white px-5 py-8 sm:px-8 sm:py-12 lg:px-10">
         <div className="mx-auto max-w-[1440px] space-y-5">
-          <div className="home-gsap-card rounded-2xl border border-slate-200 bg-white p-5 shadow-lg sm:p-7">
+          <div
+            className={`home-gsap-card rounded-2xl border border-slate-200 bg-white p-5 shadow-lg transition-[padding] duration-200 sm:p-7 ${
+              localityDropdownOpen ? "lg:pb-[30rem]" : ""
+            }`}
+          >
             <p className="mb-5 text-center text-base font-semibold text-navy sm:text-left">Search properties in Hosur</p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1.4fr_0.8fr_0.9fr_auto] lg:items-stretch">
-              <div className="flex min-h-[52px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition focus-within:border-orange focus-within:ring-2 focus-within:ring-orange/20 sm:col-span-2 lg:col-span-1">
-                <MagnifyingGlassIcon className="h-5 w-5 flex-shrink-0 text-orange" />
-                <input
-                  value={search.search}
-                  onChange={(event) => setSearch((prev) => ({ ...prev, search: event.target.value }))}
-                  placeholder="Search locality, project, or property name"
-                  className="min-w-0 w-full bg-transparent text-sm font-medium text-navy outline-none placeholder:text-slate-400"
-                />
-              </div>
+              <LocalityDropdown
+                value={search.search}
+                onChange={(value) => setSearch((prev) => ({ ...prev, search: value }))}
+                onOpenChange={setLocalityDropdownOpen}
+                onSelect={() => {
+                  scrollToTop();
+                  navigate(`/listings?${queryString || "intent=buy"}`);
+                }}
+              />
 
               <select
                 value={search.intent}
@@ -883,8 +888,6 @@ const HomePage = () => {
             ))}
         </div>
       </MotionSection>
-
-      <LocalitySearch />
 
       <MotionSection
         initial="hidden"
