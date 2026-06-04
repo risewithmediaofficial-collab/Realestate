@@ -140,9 +140,12 @@ const Navbar = () => {
                 scrollToTop();
                 closeMenu();
               }}
-              className="inline-flex min-w-0 items-center"
+              className="inline-flex min-w-0 flex-col items-start gap-0.5"
             >
-              <BrandLogo className="h-12 w-auto max-w-[150px] sm:h-14 sm:max-w-[170px]" />
+              <BrandLogo className="h-10 w-auto max-w-[140px] sm:h-12 sm:max-w-[160px]" />
+              <span className="text-[10px] font-medium leading-none text-slate-500 sm:text-[11px]">
+                Powered by <span className="font-bold text-navy">Gyes Construction</span>
+              </span>
             </NavLink>
 
             <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">{navLinks.map(renderDesktopLink)}</nav>

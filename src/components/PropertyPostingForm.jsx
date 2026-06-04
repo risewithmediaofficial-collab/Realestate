@@ -21,6 +21,7 @@ const propertyTypes = [
 
 const landAreaOptions = ["1200 sq feet", "1500 sq feet", "1800 sq feet", "2400 sq feet"];
 const priceOptions = ["7.00 L", "10.00 L", "12.00 L", "15.00 L"];
+const independentHouseMinPriceRanges = ["40 to 60 L", "60 to 80 L", "80 L to 1 Cr", "1 Cr to 1.5 Cr"];
 const facingOptions = ["East", "West", "North", "South"];
 const yesNoOptions = ["Yes", "No"];
 
@@ -53,6 +54,7 @@ const defaultForm = {
   security: "No",
   dtcp: "No",
   hmda: "No",
+  hntda: "No",
   rera: "No",
   reraId: "",
   bhk: "",
@@ -110,7 +112,7 @@ const typeFieldConfig = {
     detailTitle: "Individual House Details",
     priceLabel: "Expected Sale Price",
     detailFields: ["bhk", "bathrooms", "builtupArea", "landArea", "furnishingStatus", "facing"],
-    featureFields: ["parking", "waterSupply", "security", "cctvCamera", "dtcp", "rera"],
+    featureFields: ["parking", "waterSupply", "security", "cctvCamera", "dtcp", "hntda", "rera"],
   },
   Rent: {
     description: "Rental property details with rent, deposit, rooms, and basic facilities.",
@@ -174,6 +176,7 @@ const fieldLabels = {
   security: "Security",
   dtcp: "DTCP",
   hmda: "HMDA",
+  hntda: "HNTDA Approved",
   rera: "RERA",
   parking: "Parking",
   balcony: "Balcony",
@@ -323,6 +326,7 @@ const PropertyPostingForm = ({ heading = "Post Property", onSuccess, initialData
 
     if (required.some((value) => !value)) return false;
     if (!form.price && !form.maxPrice && !form.monthlyRent) return false;
+    if (form.propertyType === "Independent House" && !form.minPrice) return false;
     if (form.description.trim().length < 10) return false;
 
     return true;
@@ -370,7 +374,8 @@ const PropertyPostingForm = ({ heading = "Post Property", onSuccess, initialData
         form.landArea ? `Land Area: ${form.landArea}` : "",
         form.builtupArea ? `Built-up Area: ${form.builtupArea}` : "",
         form.bhk ? `Rooms: ${form.bhk}` : "",
-        form.minPrice ? `Min Price: ${form.minPrice}` : "",
+        form.minPrice ? `Min Price Range: ${form.minPrice}` : "",
+        form.propertyType === "Independent House" && form.hntda ? `HNTDA Approved: ${form.hntda}` : "",
         form.maxPrice ? `Max Price: ${form.maxPrice}` : "",
         form.length ? `Length: ${form.length}` : "",
         form.width ? `Width: ${form.width}` : "",
@@ -496,8 +501,16 @@ const PropertyPostingForm = ({ heading = "Post Property", onSuccess, initialData
             <Field label={config.priceLabel} required>
               {renderInput(config.priceLabel.includes("Rent") ? "monthlyRent" : "price")}
             </Field>
-            <Field label="Min Price">{renderInput("minPrice")}</Field>
-            <Field label="Max Price">{renderInput("maxPrice")}</Field>
+            {form.propertyType === "Independent House" ? (
+              <Field label="Minimum Price Range" required className="md:col-span-2">
+                <MinPriceRangeGroup value={form.minPrice} onChange={(value) => update("minPrice", value)} />
+              </Field>
+            ) : (
+              <>
+                <Field label="Min Price">{renderInput("minPrice")}</Field>
+                <Field label="Max Price">{renderInput("maxPrice")}</Field>
+              </>
+            )}
           </div>
         </FormSection>
 
@@ -791,6 +804,25 @@ const YesNoGroup = ({ field, value, onChange }) => (
         }`}
       >
         {option}
+      </button>
+    ))}
+  </div>
+);
+
+const MinPriceRangeGroup = ({ value, onChange }) => (
+  <div className="flex flex-wrap gap-2">
+    {independentHouseMinPriceRanges.map((range) => (
+      <button
+        key={range}
+        type="button"
+        onClick={() => onChange(range)}
+        className={`rounded-lg border px-4 py-2.5 text-sm font-bold transition ${
+          value === range
+            ? "border-orange bg-orange text-white shadow-sm"
+            : "border-slate-200 bg-white text-navy hover:border-orange hover:bg-orange/5"
+        }`}
+      >
+        {range}
       </button>
     ))}
   </div>

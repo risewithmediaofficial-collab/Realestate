@@ -23,6 +23,11 @@ import {
   WrenchScrewdriverIcon,
 } from "../components/AppIcons";
 import CountUpNumber from "../components/CountUpNumber";
+import {
+  buildServiceRequestPath,
+  HOME_OFFICE_SERVICE_SHORTCUTS,
+  PROPERTY_MANAGEMENT_SHORTCUTS,
+} from "../constants/serviceCatalog";
 import PropertyCard from "../components/PropertyCard";
 import LocalityDropdown from "../components/LocalityDropdown";
 import SeoHead from "../components/SeoHead";
@@ -123,22 +128,18 @@ const shortcutGroups = [
     ],
   },
   {
-    label: "Construction",
-    items: [
-      { label: "House Construction", to: "/request-service?category=construction&type=House Construction" },
-      { label: "Office Construction", to: "/request-service?category=construction&type=Office Construction" },
-      { label: "Commercial Building", to: "/request-service?category=construction&type=Commercial Building" },
-      { label: "Apartment", to: "/request-service?category=construction&type=Apartment" },
-      { label: "Industry & Warehouse", to: "/request-service?category=construction&type=Industry & Warehouse" },
-    ],
+    label: "Home and Office Service",
+    items: HOME_OFFICE_SERVICE_SHORTCUTS.map((item) => ({
+      label: item.label,
+      to: buildServiceRequestPath(item),
+    })),
   },
   {
-    label: "Management",
-    items: [
-      { label: "Home Management", to: "/request-service?category=management&type=Home Management" },
-      { label: "Office Management", to: "/request-service?category=management&type=Office Management" },
-      { label: "Property Management", to: "/request-service?category=management&type=Property Management" },
-    ],
+    label: "Property Management Service",
+    items: PROPERTY_MANAGEMENT_SHORTCUTS.map((item) => ({
+      label: item.label,
+      to: buildServiceRequestPath(item),
+    })),
   },
 ];
 

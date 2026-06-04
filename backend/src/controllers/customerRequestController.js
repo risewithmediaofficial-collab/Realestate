@@ -62,7 +62,18 @@ const SERVICE_TYPE_OPTIONS = {
   loan: ["Home Loan", "Plot Loan", "Mortgage Loan", "Private Finance"],
   interior: ["Home Interior", "Office Interior"],
   construction: ["House Construction", "Office Construction", "Commercial Building", "Apartment", "Industry & Warehouse"],
-  property_management: ["House & Office, Apartment, Industry Maintenance & AMC Service", "NRI Property Management Service", "Farm Management", "House Management", "Bungalow Management", "Agriculture Land Maintenance"],
+  property_management: [
+    "Apartment",
+    "Industry",
+    "Maintenance",
+    "AMC Service",
+    "House & Office, Apartment, Industry Maintenance & AMC Service",
+    "NRI Property Management Service",
+    "Farm Management",
+    "House Management",
+    "Bungalow Management",
+    "Agriculture Land Maintenance",
+  ],
   home_office_services: ["Home & Office Cleaning", "Home & Office Shifting (Packers & Movers)", "Home Appliance Service (TV, Fridge, Washing Machine Repair)", "Electrical & Plumbing Service", "Carpentry & Interior Work", "Pest Control Service", "Bathroom Cleaning (Toilet Acid Wash)", "Tank & Sump Cleaning", "Painting Work", "Sofa Cleaning", "Carpet Cleaning", "Land Scaping", "Garden Maintenance"],
 };
 

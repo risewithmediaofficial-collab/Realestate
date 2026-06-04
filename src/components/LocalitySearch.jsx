@@ -2,34 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronDownIcon, MagnifyingGlassIcon } from "./AppIcons";
-
-// Left side - Main locations for dropdown selection
-const leftLocations = [
-  "Hosur City",
-  "Jeemangalam",
-  "Mathigiri",
-  "Anthivadi",
-  "Belagondapalli",
-  "Nagondapalli",
-  "Agondapalli",
-  "Uddanapalli",
-  "Bathalapalli",
-  "Perandapalli",
-  "Barandhur",
-];
-
-// Right side - Nearby main areas
-const rightLocations = [
-  "Kamandoddi",
-  "Shoolagiri",
-  "Bagalur",
-  "Berigai",
-  "Denkanikottai",
-  "Kelamangalam",
-  "Thally",
-  "Anchetty",
-  "Rayakottai",
-];
+import { MAIN_AREAS, NEARBY_AREAS } from "../constants/localities";
 const LocalitySearch = () => {
   const navigate = useNavigate();
   const [manualSearch, setManualSearch] = useState("");
@@ -78,37 +51,14 @@ const LocalitySearch = () => {
           </form>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid gap-6 md:gap-8 grid-cols-1 md:grid-cols-2">
-          {/* Left Column - Main Locations (Dropdown/Selection) */}
-          <div className="home-gsap-card rounded-xl border border-slate-200 bg-white p-6 shadow-card">
-            <h3 className="mb-4 text-lg font-bold text-navy">Neighborhoods</h3>
-            <div className="space-y-2 max-h-[600px] overflow-y-auto pr-3">
-              {leftLocations.map((location, index) => (
-                <motion.button
-                  key={index}
-                  type="button"
-                  onClick={() => {
-                    handleLocalitySearch(location);
-                  }}
-                  className="relative w-full rounded-lg border-2 border-slate-200 bg-white px-4 py-3 text-left font-semibold text-navy transition duration-200 flex items-center justify-between hover:border-orange hover:bg-orange/10 hover:text-orange active:scale-95"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <span className="truncate">{location}</span>
-                  <ChevronDownIcon className="h-5 w-5 flex-shrink-0" />
-                </motion.button>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Column - Nearby Main Areas */}
+        {/* Nearby Areas first, Main Areas below */}
+        <div className="grid grid-cols-1 gap-6 md:gap-8">
           <div className="home-gsap-card rounded-xl border border-slate-200 bg-white p-6 shadow-card">
             <h3 className="mb-4 text-lg font-bold text-navy">Nearby Areas</h3>
-            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 max-h-[600px] overflow-y-auto pr-3">
-              {rightLocations.map((location, index) => (
+            <div className="grid max-h-[600px] grid-cols-1 gap-3 overflow-y-auto pr-3 sm:grid-cols-2 md:grid-cols-3">
+              {NEARBY_AREAS.map((location, index) => (
                 <motion.button
-                  key={index}
+                  key={location}
                   type="button"
                   onClick={() => handleLocalitySearch(location)}
                   initial={{ opacity: 0, y: 10 }}
@@ -117,9 +67,28 @@ const LocalitySearch = () => {
                   className="group rounded-lg border-2 border-slate-200 bg-white px-4 py-3 text-left font-medium text-slate-700 transition duration-200 hover:border-orange hover:bg-orange/10 hover:text-orange active:scale-95"
                 >
                   <span className="flex items-center gap-2">
-                    <span className="inline-block h-2 w-2 rounded-full bg-orange transition group-hover:scale-125 flex-shrink-0" />
+                    <span className="inline-block h-2 w-2 flex-shrink-0 rounded-full bg-orange transition group-hover:scale-125" />
                     <span className="truncate">{location}</span>
                   </span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          <div className="home-gsap-card rounded-xl border border-slate-200 bg-white p-6 shadow-card">
+            <h3 className="mb-4 text-lg font-bold text-navy">Main Areas</h3>
+            <div className="max-h-[600px] space-y-2 overflow-y-auto pr-3">
+              {MAIN_AREAS.map((location, index) => (
+                <motion.button
+                  key={location}
+                  type="button"
+                  onClick={() => handleLocalitySearch(location)}
+                  className="relative flex w-full items-center justify-between rounded-lg border-2 border-slate-200 bg-white px-4 py-3 text-left font-semibold text-navy transition duration-200 hover:border-orange hover:bg-orange/10 hover:text-orange active:scale-95"
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span className="truncate">{location}</span>
+                  <ChevronDownIcon className="h-5 w-5 flex-shrink-0" />
                 </motion.button>
               ))}
             </div>

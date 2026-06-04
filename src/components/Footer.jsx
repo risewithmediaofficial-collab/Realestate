@@ -34,6 +34,9 @@ const Footer = () => (
             <div className="flex items-center gap-3">
               <div className="inline-flex rounded-xl bg-white px-3 py-2 shadow-sm">
                 <BrandLogo className="h-auto w-[240px] max-w-[72vw]" />
+                <p className="mt-2 text-xs font-medium text-slate-400">
+                  Powered by <span className="font-bold text-white/90">Gyes Construction</span>
+                </p>
               </div>
             </div>
             <p className="max-w-sm text-sm leading-7 text-white">

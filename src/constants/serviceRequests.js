@@ -53,7 +53,18 @@ export const SERVICE_REQUEST_OPTIONS = {
   property_management: {
     label: "Property Management",
     requestCategory: "property_management",
-    serviceTypes: ["House & Office, Apartment, Industry Maintenance & AMC Service", "NRI Property Management Service", "Farm Management", "House Management", "Bungalow Management", "Agriculture Land Maintenance"],
+    serviceTypes: [
+      "Apartment",
+      "Industry",
+      "Maintenance",
+      "AMC Service",
+      "House & Office, Apartment, Industry Maintenance & AMC Service",
+      "NRI Property Management Service",
+      "Farm Management",
+      "House Management",
+      "Bungalow Management",
+      "Agriculture Land Maintenance",
+    ],
     budgetLabel: "Annual Budget",
   },
   home_office_services: {

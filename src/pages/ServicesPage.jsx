@@ -1,37 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  ArrowRightIcon,
-  BrokerIcon,
-  BuildingOffice2Icon,
-  CreditCardIcon,
-  DocumentMagnifyingGlassIcon,
-  DocumentTextIcon,
-  ElectricalIcon,
-  EngineeringIcon,
-  GardenIcon,
-  HandshakeIcon,
-  HomeModernIcon,
-  InteriorIcon,
-  LandIcon,
-  LoanIcon,
-  MagnifyingGlassIcon,
-  ManagementIcon,
-  MapIcon,
-  PaintBrushIcon,
-  PestControlIcon,
-  PlumbingIcon,
-  PropertySearchIcon,
-  RegistrationIcon,
-  ScaleIcon,
-  ShieldCheckIcon,
-  SparklesIcon,
-  TransportIcon,
-  VillaIcon,
-  WrenchScrewdriverIcon,
-} from "../components/AppIcons";
+import { ArrowRightIcon, MagnifyingGlassIcon, SparklesIcon } from "../components/AppIcons";
+import ServiceCategoryModal from "../components/ServiceCategoryModal";
 import SeoHead from "../components/SeoHead";
+import { serviceCategories, serviceQuickLinks } from "../constants/serviceCatalog";
 import { buildBreadcrumbSchema, buildRealEstateAgentSchema } from "../utils/seo";
 
 // Import service images
@@ -136,112 +109,11 @@ const serviceHighlights = [
   }
 ];
 
-const serviceCategories = [
-  {
-    key: "buy-sell-rent",
-    title: "Buy / Sell / Rent",
-    description: "We help customers buy, sell, and rent properties with complete assistance.",
-    icon: BrokerIcon,
-    services: [
-      { label: "Property legal service", icon: ScaleIcon },
-      { label: "Sale agreement support", icon: HandshakeIcon },
-      { label: "Property buying guidance", icon: HomeModernIcon },
-      { label: "Property selling guidance", icon: BrokerIcon },
-    ],
-  },
-  {
-    key: "loan-services",
-    title: "Loan Services",
-    description: "Fast and reliable loan assistance for various property requirements.",
-    icon: LoanIcon,
-    services: [
-      { label: "Home loan", icon: HomeModernIcon },
-      { label: "Plot loan", icon: LandIcon },
-      { label: "Commercial loan", icon: BuildingOffice2Icon },
-      { label: "Agriculture loan", icon: GardenIcon },
-      { label: "Home loan balance transfer", icon: CreditCardIcon },
-    ],
-  },
-  {
-    key: "registration-services",
-    title: "Registration Services",
-    description: "End-to-end documentation and registration assistance.",
-    icon: RegistrationIcon,
-    services: [
-      { label: "Sale deed registration", icon: DocumentTextIcon },
-      { label: "Patta transfer", icon: RegistrationIcon },
-      { label: "Land survey", icon: MapIcon },
-    ],
-  },
-  {
-    key: "property-search",
-    title: "Property Search",
-    description: "Find suitable properties based on your requirements.",
-    icon: PropertySearchIcon,
-    services: [
-      { label: "Plot search", icon: LandIcon },
-      { label: "Commercial property search", icon: BuildingOffice2Icon },
-      { label: "Agriculture land search", icon: GardenIcon },
-    ],
-  },
-  {
-    key: "interior-construction",
-    title: "Interior & Construction",
-    description: "Premium interior and construction solutions.",
-    icon: InteriorIcon,
-    services: [
-      { label: "Home interiors", icon: InteriorIcon },
-      { label: "Office interiors", icon: PaintBrushIcon },
-      { label: "Construction services", icon: EngineeringIcon },
-      { label: "Approval plans", icon: DocumentMagnifyingGlassIcon },
-    ],
-  },
-  {
-    key: "property-management",
-    title: "Property Management Service",
-    description: "Comprehensive maintenance and management for all types of properties.",
-    icon: ManagementIcon,
-    services: [
-      { label: "House & Office, Apartment, Industry Maintenance & AMC Service", icon: ManagementIcon },
-      { label: "NRI Property Management Service", icon: ShieldCheckIcon },
-      { label: "Farm Management", icon: GardenIcon },
-      { label: "House Management", icon: HomeModernIcon },
-      { label: "Bungalow Management", icon: VillaIcon },
-      { label: "Agriculture Land Maintenance", icon: GardenIcon },
-    ],
-  },
-  {
-    key: "home-office-services",
-    title: "Home & Office Services",
-    description: "Complete maintenance and support services for homes and offices.",
-    icon: WrenchScrewdriverIcon,
-    services: [
-      { label: "Home & Office Cleaning", icon: SparklesIcon },
-      { label: "Home & Office Shifting (Packers & Movers)", icon: TransportIcon },
-      { label: "Home Appliance Service (TV, Fridge, Washing Machine Repair)", icon: WrenchScrewdriverIcon },
-      { label: "Electrical & Plumbing Service", icon: ElectricalIcon },
-      { label: "Carpentry & Interior Work", icon: PaintBrushIcon },
-      { label: "Pest Control Service", icon: PestControlIcon },
-      { label: "Bathroom Cleaning (Toilet Acid Wash)", icon: SparklesIcon },
-      { label: "Tank & Sump Cleaning", icon: PlumbingIcon },
-      { label: "Painting Work", icon: PaintBrushIcon },
-      { label: "Sofa Cleaning", icon: SparklesIcon },
-      { label: "Carpet Cleaning", icon: SparklesIcon },
-      { label: "Land Scaping", icon: GardenIcon },
-      { label: "Garden Maintenance", icon: GardenIcon },
-    ],
-  },
-];
-
-const serviceQuickLinks = serviceCategories.map(({ key, title, icon }) => ({
-  key,
-  title,
-  icon,
-  href: `#service-${key}`,
-}));
-
 const ServicesPage = () => {
   const [search, setSearch] = useState("");
+  const [activeCategoryKey, setActiveCategoryKey] = useState(null);
+
+  const activeCategory = serviceCategories.find((category) => category.key === activeCategoryKey) || null;
 
   const breadcrumbs = [
     { label: "Home", to: "/" },
@@ -294,22 +166,25 @@ const ServicesPage = () => {
               {serviceQuickLinks.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <a
+                  <button
                     key={item.key}
-                    href={item.href}
-                    className="group inline-flex min-h-[52px] items-center gap-3 rounded-lg border border-white/15 bg-white px-4 py-3 text-sm font-bold text-navy shadow-sm transition hover:-translate-y-0.5 hover:border-orange hover:text-orange"
+                    type="button"
+                    onClick={() => setActiveCategoryKey(item.key)}
+                    className="group inline-flex min-h-[52px] w-full items-center gap-3 rounded-lg border border-white/15 bg-white px-4 py-3 text-left text-sm font-bold text-navy shadow-sm transition hover:-translate-y-0.5 hover:border-orange hover:text-orange"
                   >
                     <span className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-orange/10 text-orange transition group-hover:bg-orange group-hover:text-white">
                       <Icon className="h-4 w-4" />
                     </span>
                     <span className="leading-snug">{item.title}</span>
-                  </a>
+                  </button>
                 );
               })}
             </div>
           </motion.div>
         </div>
       </MotionSection>
+
+      <ServiceCategoryModal category={activeCategory} onClose={() => setActiveCategoryKey(null)} />
 
       <MotionSection
         initial="hidden"

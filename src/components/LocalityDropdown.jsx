@@ -1,33 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckIcon, ChevronDownIcon } from "./AppIcons";
-
-const localitiesData = {
-  "Main Localities": [
-    "Hosur City",
-    "Jeemangalam",
-    "Mathigiri",
-    "Anthivadi",
-    "Belagondapalli",
-    "Nagondapalli",
-    "Agondapalli",
-    "Uddanapalli",
-    "Bathalapalli",
-    "Perandapalli",
-    "Barandhur",
-  ],
-  "Nearby Areas": [
-    "Kamandoddi",
-    "Shoolagiri",
-    "Bagalur",
-    "Berigai",
-    "Denkanikottai",
-    "Kelamangalam",
-    "Thally",
-    "Anchetty",
-    "Rayakottai",
-  ],
-};
+import { LOCALITY_SECTIONS } from "../constants/localities";
 
 const LocalityDropdown = ({ value, onChange, onSelect, onOpenChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,26 +9,15 @@ const LocalityDropdown = ({ value, onChange, onSelect, onOpenChange }) => {
   const dropdownRef = useRef(null);
   const triggerRef = useRef(null);
 
-  // Filter localities based on search query
-  const filteredLocalities = Object.entries(localitiesData).reduce(
-    (acc, [category, items]) => {
-      const filtered = items.filter((item) =>
-        item.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      if (filtered.length > 0) {
-        acc[category] = filtered;
-      }
-      return acc;
-    },
-    {}
-  );
+  const filteredSections = LOCALITY_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) =>
+      item.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+  })).filter((section) => section.items.length > 0);
 
-  const totalResults = Object.values(filteredLocalities).reduce(
-    (sum, items) => sum + items.length,
-    0
-  );
+  const totalResults = filteredSections.reduce((sum, section) => sum + section.items.length, 0);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -76,7 +39,6 @@ const LocalityDropdown = ({ value, onChange, onSelect, onOpenChange }) => {
     onOpenChange?.(isOpen);
   }, [isOpen, onOpenChange]);
 
-  // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -111,11 +73,9 @@ const LocalityDropdown = ({ value, onChange, onSelect, onOpenChange }) => {
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <span className="flex items-center gap-3 min-w-0 flex-1">
+        <span className="flex min-w-0 flex-1 items-center gap-3">
           <svg
-            className={`h-5 w-5 flex-shrink-0 transition ${
-              isOpen ? "text-orange" : "text-slate-400"
-            }`}
+            className={`h-5 w-5 flex-shrink-0 transition ${isOpen ? "text-orange" : "text-slate-400"}`}
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -125,9 +85,7 @@ const LocalityDropdown = ({ value, onChange, onSelect, onOpenChange }) => {
               clipRule="evenodd"
             />
           </svg>
-          <span className={`truncate text-sm font-medium ${
-            value ? "text-navy" : "text-slate-500"
-          }`}>
+          <span className={`truncate text-sm font-medium ${value ? "text-navy" : "text-slate-500"}`}>
             {value || "Search or select locality..."}
           </span>
         </span>
@@ -147,8 +105,7 @@ const LocalityDropdown = ({ value, onChange, onSelect, onOpenChange }) => {
             transition={{ duration: 0.2 }}
             className="absolute left-0 right-0 top-full mt-3 w-full rounded-xl border border-slate-200 bg-white shadow-2xl"
           >
-            {/* Search Input */}
-            <div className="border-b border-slate-100 p-4 sticky top-0 bg-white rounded-t-xl backdrop-blur-sm bg-white/95">
+            <div className="sticky top-0 z-10 rounded-t-xl border-b border-slate-100 bg-white/95 p-4 backdrop-blur-sm">
               <div className="relative">
                 <svg
                   className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
@@ -172,57 +129,48 @@ const LocalityDropdown = ({ value, onChange, onSelect, onOpenChange }) => {
               </div>
             </div>
 
-            {/* Dropdown Content */}
             <div className="max-h-[420px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
               {totalResults > 0 ? (
                 <div className="py-2">
-                  {Object.entries(filteredLocalities).map(
-                    ([category, localities], categoryIndex) => (
-                      <div key={category}>
-                        {categoryIndex > 0 && (
-                          <div className="my-1 border-t border-slate-100" />
-                        )}
-                        <div className="px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                          {category}
-                        </div>
-                        <div className="space-y-0.5 px-2">
-                          {localities.map((locality, index) => (
-                            <motion.button
-                              key={locality}
-                              type="button"
-                              onClick={() => handleSelectLocality(locality)}
-                              initial={{ opacity: 0, x: -8 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.02 }}
-                              className="w-full flex items-center justify-between rounded-lg px-4 py-3 text-left text-sm font-medium text-slate-700 transition duration-150 hover:bg-gradient-to-r hover:from-orange/10 hover:to-transparent hover:text-orange active:scale-95 group"
-                            >
-                              <span className="flex items-center gap-3 min-w-0 flex-1">
-                                <span className="inline-block h-2.5 w-2.5 rounded-full bg-orange flex-shrink-0 transition duration-200 group-hover:scale-150 group-hover:bg-orange" />
-                                <span className="truncate text-sm">{locality}</span>
-                              </span>
-                              {value === locality && (
-                                <div className="flex-shrink-0 ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-orange/10">
-                                  <CheckIcon className="h-3.5 w-3.5 text-orange" />
-                                </div>
-                              )}
-                            </motion.button>
-                          ))}
-                        </div>
+                  {filteredSections.map((section, sectionIndex) => (
+                    <div key={section.key}>
+                      {sectionIndex > 0 ? <div className="my-1 border-t border-slate-100" /> : null}
+                      <div className="sticky top-0 z-[1] bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-600">
+                        {section.label}
                       </div>
-                    )
-                  )}
+                      <div className="space-y-0.5 px-2 pb-1">
+                        {section.items.map((locality, index) => (
+                          <motion.button
+                            key={locality}
+                            type="button"
+                            onClick={() => handleSelectLocality(locality)}
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.02 }}
+                            className="group flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-sm font-medium text-slate-700 transition duration-150 hover:bg-gradient-to-r hover:from-orange/10 hover:to-transparent hover:text-orange active:scale-95"
+                          >
+                            <span className="flex min-w-0 flex-1 items-center gap-3">
+                              <span className="inline-block h-2.5 w-2.5 flex-shrink-0 rounded-full bg-orange transition duration-200 group-hover:scale-150" />
+                              <span className="truncate text-sm">{locality}</span>
+                            </span>
+                            {value === locality ? (
+                              <div className="ml-2 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-orange/10">
+                                <CheckIcon className="h-3.5 w-3.5 text-orange" />
+                              </div>
+                            ) : null}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center p-8">
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
                     <span className="text-lg">🔍</span>
                   </div>
-                  <p className="text-sm font-semibold text-slate-700">
-                    No localities found
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Try searching with different keywords
-                  </p>
+                  <p className="text-sm font-semibold text-slate-700">No localities found</p>
+                  <p className="mt-1 text-xs text-slate-500">Try searching with different keywords</p>
                 </div>
               )}
             </div>
