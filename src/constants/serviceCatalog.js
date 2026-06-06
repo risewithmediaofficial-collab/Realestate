@@ -23,25 +23,80 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
   TransportIcon,
-  VillaIcon,
   WrenchScrewdriverIcon,
 } from "../components/AppIcons";
 
 /** Hero + request-service links — Home and Office Service */
 export const HOME_OFFICE_SERVICE_SHORTCUTS = [
-  { label: "Apartment", category: "property_management", type: "Apartment" },
-  { label: "Industry", category: "property_management", type: "Industry" },
-  { label: "Maintenance", category: "property_management", type: "Maintenance" },
-  { label: "AMC Service", category: "property_management", type: "AMC Service" },
+  {
+    label: "Home & Office Cleaning Service - Deep Cleaning",
+    category: "home_office_services",
+    type: "Home & Office Cleaning Service - Deep Cleaning",
+  },
+  {
+    label: "Home & Office Shifting Service - Packers & Movers",
+    category: "home_office_services",
+    type: "Home & Office Shifting Service - Packers & Movers",
+  },
+  {
+    label: "Home Appliance Service - TV, Fridge, Washing Machine Service",
+    category: "home_office_services",
+    type: "Home Appliance Service - TV, Fridge, Washing Machine Service",
+  },
+  {
+    label: "Electrical & Plumbing Service",
+    category: "home_office_services",
+    type: "Electrical & Plumbing Service",
+  },
+  {
+    label: "Interior & Carpentry Work",
+    category: "home_office_services",
+    type: "Interior & Carpentry Work",
+  },
+  {
+    label: "Pest Control Service",
+    category: "home_office_services",
+    type: "Pest Control Service",
+  },
+  {
+    label: "Tank, Sump & Bathroom Cleaning Service",
+    category: "home_office_services",
+    type: "Tank, Sump & Bathroom Cleaning Service",
+  },
+  {
+    label: "Painting Work",
+    category: "home_office_services",
+    type: "Painting Work",
+  },
+  {
+    label: "Sofa & Carpet Cleaning",
+    category: "home_office_services",
+    type: "Sofa & Carpet Cleaning",
+  },
 ];
 
 /** Hero + request-service links — Property Management Service */
 export const PROPERTY_MANAGEMENT_SHORTCUTS = [
-  { label: "NRI Property Management Service", category: "property_management", type: "NRI Property Management Service" },
-  { label: "Farm House", category: "property_management", type: "Farm Management" },
-  { label: "Bungalow", category: "property_management", type: "Bungalow Management" },
-  { label: "Agriculture Land Maintenance", category: "property_management", type: "Agriculture Land Maintenance" },
-  { label: "House Management", category: "property_management", type: "House Management" },
+  {
+    label: "Home & Apartment Facility AMC Service",
+    category: "property_management",
+    type: "Home & Apartment Facility AMC Service",
+  },
+  {
+    label: "Industry & Warehouse Facility AMC Service",
+    category: "property_management",
+    type: "Industry & Warehouse Facility AMC Service",
+  },
+  {
+    label: "Land Scraping & Garden Maintenance Property Management Service",
+    category: "property_management",
+    type: "Land Scraping & Garden Maintenance Property Management Service",
+  },
+  {
+    label: "NRI Property Management Service",
+    category: "property_management",
+    type: "NRI Property Management Service",
+  },
 ];
 
 export const buildServiceRequestPath = ({ category, type }) => {
@@ -117,35 +172,40 @@ export const serviceCategories = [
     icon: ManagementIcon,
     services: PROPERTY_MANAGEMENT_SHORTCUTS.map((item) => ({
       label: item.label,
-      icon: item.label.includes("NRI") ? ShieldCheckIcon : item.label.includes("Farm") ? GardenIcon : item.label.includes("Bungalow") ? VillaIcon : item.label.includes("Agriculture") ? GardenIcon : HomeModernIcon,
+      icon: item.label.includes("NRI")
+        ? ShieldCheckIcon
+        : item.label.includes("Garden") || item.label.includes("Land")
+          ? GardenIcon
+          : item.label.includes("Warehouse")
+            ? BuildingOffice2Icon
+            : HomeModernIcon,
       requestPath: buildServiceRequestPath(item),
     })),
   },
   {
     key: "home-office-services",
     title: "Home & Office Services",
-    description: "Apartment, industry, maintenance, AMC, and complete home and office support.",
+    description: "Cleaning, shifting, appliance care, repairs, and complete support for home and office spaces.",
     icon: WrenchScrewdriverIcon,
-    services: [
-      ...HOME_OFFICE_SERVICE_SHORTCUTS.map((item) => ({
-        label: item.label,
-        icon: ManagementIcon,
-        requestPath: buildServiceRequestPath(item),
-      })),
-      { label: "Home & Office Cleaning", icon: SparklesIcon },
-      { label: "Home & Office Shifting (Packers & Movers)", icon: TransportIcon },
-      { label: "Home Appliance Service (TV, Fridge, Washing Machine Repair)", icon: WrenchScrewdriverIcon },
-      { label: "Electrical & Plumbing Service", icon: ElectricalIcon },
-      { label: "Carpentry & Interior Work", icon: PaintBrushIcon },
-      { label: "Pest Control Service", icon: PestControlIcon },
-      { label: "Bathroom Cleaning (Toilet Acid Wash)", icon: SparklesIcon },
-      { label: "Tank & Sump Cleaning", icon: PlumbingIcon },
-      { label: "Painting Work", icon: PaintBrushIcon },
-      { label: "Sofa Cleaning", icon: SparklesIcon },
-      { label: "Carpet Cleaning", icon: SparklesIcon },
-      { label: "Land Scaping", icon: GardenIcon },
-      { label: "Garden Maintenance", icon: GardenIcon },
-    ],
+    services: HOME_OFFICE_SERVICE_SHORTCUTS.map((item) => ({
+      label: item.label,
+      icon: item.label.includes("Cleaning")
+        ? SparklesIcon
+        : item.label.includes("Shifting")
+          ? TransportIcon
+          : item.label.includes("Appliance")
+            ? WrenchScrewdriverIcon
+            : item.label.includes("Electrical")
+              ? ElectricalIcon
+              : item.label.includes("Plumbing")
+                ? PlumbingIcon
+                : item.label.includes("Interior") || item.label.includes("Carpentry")
+                  ? PaintBrushIcon
+                  : item.label.includes("Pest")
+                    ? PestControlIcon
+                    : PaintBrushIcon,
+      requestPath: buildServiceRequestPath(item),
+    })),
   },
 ];
 

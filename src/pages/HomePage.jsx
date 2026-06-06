@@ -128,7 +128,7 @@ const shortcutGroups = [
     ],
   },
   {
-    label: "Home and Office Service",
+    label: "Home & Office Services",
     items: HOME_OFFICE_SERVICE_SHORTCUTS.map((item) => ({
       label: item.label,
       to: buildServiceRequestPath(item),

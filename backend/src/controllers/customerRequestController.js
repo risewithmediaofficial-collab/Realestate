@@ -63,18 +63,22 @@ const SERVICE_TYPE_OPTIONS = {
   interior: ["Home Interior", "Office Interior"],
   construction: ["House Construction", "Office Construction", "Commercial Building", "Apartment", "Industry & Warehouse"],
   property_management: [
-    "Apartment",
-    "Industry",
-    "Maintenance",
-    "AMC Service",
-    "House & Office, Apartment, Industry Maintenance & AMC Service",
+    "Home & Apartment Facility AMC Service",
+    "Industry & Warehouse Facility AMC Service",
+    "Land Scraping & Garden Maintenance Property Management Service",
     "NRI Property Management Service",
-    "Farm Management",
-    "House Management",
-    "Bungalow Management",
-    "Agriculture Land Maintenance",
   ],
-  home_office_services: ["Home & Office Cleaning", "Home & Office Shifting (Packers & Movers)", "Home Appliance Service (TV, Fridge, Washing Machine Repair)", "Electrical & Plumbing Service", "Carpentry & Interior Work", "Pest Control Service", "Bathroom Cleaning (Toilet Acid Wash)", "Tank & Sump Cleaning", "Painting Work", "Sofa Cleaning", "Carpet Cleaning", "Land Scaping", "Garden Maintenance"],
+  home_office_services: [
+    "Home & Office Cleaning Service - Deep Cleaning",
+    "Home & Office Shifting Service - Packers & Movers",
+    "Home Appliance Service - TV, Fridge, Washing Machine Service",
+    "Electrical & Plumbing Service",
+    "Interior & Carpentry Work",
+    "Pest Control Service",
+    "Tank, Sump & Bathroom Cleaning Service",
+    "Painting Work",
+    "Sofa & Carpet Cleaning",
+  ],
 };
 
 const isPropertyRequest = (requestCategory) => PROPERTY_REQUEST_CATEGORIES.includes(requestCategory);

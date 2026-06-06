@@ -32,10 +32,10 @@ const Footer = () => (
         <div className="grid gap-8 lg:grid-cols-[1.15fr_1fr_1.1fr]">
           <div className="space-y-4 lg:col-span-1">
             <div className="flex items-center gap-3">
-              <div className="inline-flex rounded-xl bg-white px-3 py-2 shadow-sm">
+              <div className="inline-flex rounded-xl border border-white/15 bg-white/5 px-3 py-2 shadow-sm backdrop-blur-sm">
                 <BrandLogo className="h-auto w-[240px] max-w-[72vw]" />
-                <p className="mt-2 text-xs font-medium text-slate-400">
-                  Powered by <span className="font-bold text-white/90">Gyes Construction</span>
+                <p className="mt-2 text-xs font-medium text-white">
+                  Powered by <span className="font-bold text-white">Gyes Construction</span>
                 </p>
               </div>
             </div>
