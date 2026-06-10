@@ -19,6 +19,18 @@ const userSchema = new mongoose.Schema(
       enum: ["active", "deactivated"],
       default: "active",
     },
+    isPhoneVerified: { type: Boolean, default: false },
+    otpVerification: {
+      challengeId: { type: String, default: "" },
+      purpose: { type: String, enum: ["signup", "login", ""], default: "" },
+      codeHash: { type: String, default: "" },
+      expiresAt: { type: Date, default: null },
+      resendAvailableAt: { type: Date, default: null },
+      attempts: { type: Number, default: 0 },
+      maxAttempts: { type: Number, default: 5 },
+      lastSentAt: { type: Date, default: null },
+      verifiedAt: { type: Date, default: null },
+    },
     canPostProperty: { type: Boolean, default: false },
     freePost: {
       used: { type: Boolean, default: false },

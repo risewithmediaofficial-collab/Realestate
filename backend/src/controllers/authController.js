@@ -1,11 +1,22 @@
+const crypto = require("crypto");
+const axios = require("axios");
 const { body } = require("express-validator");
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
 const sendEmail = require("../utils/sendEmail");
 const generateHtmlEmail = require("../utils/emailFormatter");
 const { sendWelcomeTemplateEmail } = require("../utils/sendEmailJs");
+const { sendOtp, hasMsg91Config } = require("../utils/sendOtp");
+const { verifyFirebaseIdToken } = require("../utils/firebaseAuth");
 
 const FREE_POST_VALIDITY_DAYS = 90;
+const OTP_EXPIRY_MINUTES = Math.max(Number(process.env.OTP_EXPIRY_MINUTES) || 5, 1);
+const OTP_RESEND_COOLDOWN_SECONDS = Math.max(Number(process.env.OTP_RESEND_COOLDOWN_SECONDS) || 45, 15);
+const OTP_MAX_ATTEMPTS = Math.max(Number(process.env.OTP_MAX_ATTEMPTS) || 5, 3);
+const OTP_HASH_SECRET = process.env.OTP_SECRET || process.env.JWT_SECRET || "myhosurproperty-otp-secret";
+const OTP_PROVIDER = (process.env.OTP_PROVIDER || "auto").toLowerCase();
+const usesFirebaseOtp = OTP_PROVIDER === "firebase";
+
 const addDays = (date, days) => {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
@@ -24,6 +35,13 @@ const normalizeIndianPhone = (value) => {
   }
 
   return "";
+};
+
+const maskPhoneNumber = (phone) => {
+  const normalized = normalizeIndianPhone(phone);
+  if (!normalized) return "your mobile number";
+  const localNumber = normalized.slice(-10);
+  return `+91 ${localNumber.slice(0, 2)}XXXX${localNumber.slice(-4)}`;
 };
 
 const buildFreeOnboardingPack = () => {
@@ -93,16 +111,25 @@ const signupValidators = [
   body("address").optional().trim(),
 ];
 
-const loginValidators = [
-  body("email").isEmail().normalizeEmail(),
-  body("phone").trim().notEmpty(),
-  body("password").notEmpty(),
+const loginValidators = [body("email").isEmail().normalizeEmail(), body("password").notEmpty()];
+
+const socialLoginValidators = [body("provider").isIn(["google", "facebook"]), body("token").notEmpty()];
+
+const verifyOtpValidators = [
+  body("challengeId").trim().notEmpty(),
+  body().custom((value) => {
+    const hasOtp = typeof value.otp === "string" && value.otp.trim().length >= 4 && value.otp.trim().length <= 8;
+    const hasFirebaseIdToken = typeof value.firebaseIdToken === "string" && value.firebaseIdToken.trim().length > 0;
+
+    if (!hasOtp && !hasFirebaseIdToken) {
+      throw new Error("OTP or Firebase verification token is required.");
+    }
+
+    return true;
+  }),
 ];
 
-const socialLoginValidators = [
-  body("provider").isIn(["google", "facebook"]),
-  body("token").notEmpty(),
-];
+const resendOtpValidators = [body("challengeId").trim().notEmpty()];
 
 const sanitizeUser = (user) => ({
   id: user._id,
@@ -112,12 +139,27 @@ const sanitizeUser = (user) => ({
   canPostProperty: user.canPostProperty,
   phone: user.phone,
   address: user.address,
+  isPhoneVerified: Boolean(user.isPhoneVerified),
   freePost: user.freePost,
   activePlan: user.activePlan,
   savedProperties: user.savedProperties,
   contactAccess: user.contactAccess,
   leadCredits: user.leadCredits,
 });
+
+const clearOtpState = (user) => {
+  user.otpVerification = {
+    challengeId: "",
+    purpose: "",
+    codeHash: "",
+    expiresAt: null,
+    resendAvailableAt: null,
+    attempts: 0,
+    maxAttempts: OTP_MAX_ATTEMPTS,
+    lastSentAt: null,
+    verifiedAt: null,
+  };
+};
 
 const getClientUrl = () => process.env.CLIENT_URL || "http://localhost:5173";
 
@@ -130,8 +172,42 @@ const ensureValidPhone = (phone) => {
     throw error;
   }
 
+  return { normalizedPhone };
+};
+
+const hashOtp = (otp) =>
+  crypto.createHash("sha256").update(`${otp}:${OTP_HASH_SECRET}`).digest("hex");
+
+const createOtpCode = () => String(crypto.randomInt(100000, 1000000));
+
+const buildOtpResponse = (user, meta = {}) => {
+  const resendAvailableInSeconds = Math.max(
+    0,
+    Math.ceil(
+      ((user.otpVerification?.resendAvailableAt ? new Date(user.otpVerification.resendAvailableAt).getTime() : 0) - Date.now()) /
+        1000
+    )
+  );
+
+  const expiresInSeconds = Math.max(
+    0,
+    Math.ceil(
+      ((user.otpVerification?.expiresAt ? new Date(user.otpVerification.expiresAt).getTime() : 0) - Date.now()) /
+        1000
+    )
+  );
+
   return {
-    normalizedPhone,
+    success: true,
+    requiresOtp: true,
+    challengeId: user.otpVerification?.challengeId,
+    purpose: user.otpVerification?.purpose,
+    destination: maskPhoneNumber(user.phone),
+    expiresInSeconds,
+    resendAvailableInSeconds,
+    provider: meta.provider || (usesFirebaseOtp ? "firebase" : hasMsg91Config ? "msg91" : "development"),
+    ...(meta.firebasePhoneNumber ? { firebasePhoneNumber: meta.firebasePhoneNumber } : {}),
+    ...(meta.developmentOtp ? { developmentOtp: meta.developmentOtp } : {}),
   };
 };
 
@@ -169,6 +245,45 @@ const sendLoginAlert = async (user) => {
   if (!result) {
     throw new Error("Login alert email send returned no result");
   }
+};
+
+const createOtpChallenge = async (user, purpose) => {
+  const otp = usesFirebaseOtp ? "" : createOtpCode();
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + OTP_EXPIRY_MINUTES * 60 * 1000);
+  const resendAvailableAt = new Date(now.getTime() + OTP_RESEND_COOLDOWN_SECONDS * 1000);
+
+  user.otpVerification = {
+    challengeId: crypto.randomUUID(),
+    purpose,
+    codeHash: usesFirebaseOtp ? "" : hashOtp(otp),
+    expiresAt,
+    resendAvailableAt,
+    attempts: 0,
+    maxAttempts: OTP_MAX_ATTEMPTS,
+    lastSentAt: now,
+    verifiedAt: null,
+  };
+
+  await user.save();
+
+  if (usesFirebaseOtp) {
+    return buildOtpResponse(user, {
+      provider: "firebase",
+      firebasePhoneNumber: `+${normalizeIndianPhone(user.phone)}`,
+    });
+  }
+
+  const delivery = await sendOtp({
+    phoneNumber: user.phone,
+    otp,
+    purpose,
+  });
+
+  return buildOtpResponse(user, {
+    provider: delivery.provider,
+    developmentOtp: delivery.provider === "development" ? otp : "",
+  });
 };
 
 const verifyGoogleToken = async (token) => {
@@ -225,49 +340,84 @@ const verifyFacebookToken = async (token) => {
   };
 };
 
+const issueAuthResponse = (user) => ({
+  token: generateToken({ id: user._id, role: user.role }),
+  user: sanitizeUser(user),
+});
+
+const findReusableSignupUser = async ({ email, normalizedPhone }) => {
+  const existingByEmail = await User.findOne({ email });
+  const existingByPhone = await User.findOne({ phone: normalizedPhone });
+
+  if (existingByEmail && existingByEmail.status === "deactivated") {
+    return { blocked: true, message: "This email belongs to a deactivated account. Please contact support." };
+  }
+
+  if (existingByPhone && existingByPhone.status === "deactivated") {
+    return { blocked: true, message: "This mobile number belongs to a deactivated account. Please contact support." };
+  }
+
+  if (existingByEmail && existingByEmail.isPhoneVerified) {
+    return { blocked: true, message: "Email already in use" };
+  }
+
+  if (existingByPhone && existingByPhone.isPhoneVerified) {
+    return { blocked: true, message: "Mobile number already in use" };
+  }
+
+  if (existingByEmail && existingByPhone && String(existingByEmail._id) !== String(existingByPhone._id)) {
+    return { blocked: true, message: "Email or mobile number is already reserved by another account." };
+  }
+
+  return { user: existingByEmail || existingByPhone || null };
+};
+
 const signup = async (req, res) => {
   const { name, email, password, phone, address, role = "buyer" } = req.body;
   const { normalizedPhone } = ensureValidPhone(phone);
 
-  const exists = await User.findOne({ email });
-  if (exists) {
-    return res.status(409).json({ message: "Email already in use" });
+  const lookup = await findReusableSignupUser({ email, normalizedPhone });
+  if (lookup.blocked) {
+    return res.status(409).json({ message: lookup.message });
   }
 
-  const phoneExists = await User.findOne({ phone: normalizedPhone });
-  if (phoneExists) {
-    return res.status(409).json({ message: "Mobile number already in use" });
+  let user = lookup.user;
+
+  if (!user) {
+    user = new User({
+      name,
+      email,
+      password,
+      phone: normalizedPhone,
+      address,
+      role,
+      isPhoneVerified: false,
+      ...buildFreeOnboardingPack(),
+    });
+  } else {
+    user.name = name;
+    user.email = email;
+    user.password = password;
+    user.phone = normalizedPhone;
+    user.address = address;
+    user.role = role;
+    user.canPostProperty = true;
+    user.isPhoneVerified = false;
+    Object.assign(user, buildFreeOnboardingPack());
   }
 
-  const user = await User.create({
-    name,
-    email,
-    password,
-    phone: normalizedPhone,
-    address,
-    role,
-    canPostProperty: true,
-    ...buildFreeOnboardingPack(),
-  });
+  clearOtpState(user);
+  await user.save();
 
-  try {
-    await sendWelcomeEmail(user, "signing up");
-    console.log(`[signup] Welcome email sent to ${user.email}`);
-  } catch (error) {
-    console.error("[signup] Welcome email failed:", error.message);
-  }
-
-  const token = generateToken({ id: user._id, role: user.role });
-
-  return res.status(201).json({
-    token,
-    user: sanitizeUser(user),
+  const challenge = await createOtpChallenge(user, "signup");
+  return res.status(202).json({
+    ...challenge,
+    message: "OTP sent to your mobile number. Verify to activate your account.",
   });
 };
 
 const login = async (req, res) => {
-  const { email, password, phone } = req.body;
-  const { normalizedPhone } = ensureValidPhone(phone);
+  const { email, password } = req.body;
   const user = await User.findOne({ email });
 
   if (!user || !(await user.comparePassword(password))) {
@@ -278,29 +428,105 @@ const login = async (req, res) => {
     return res.status(403).json({ message: "Your account has been deactivated by the admin." });
   }
 
-  if (user.phone) {
-    if (normalizeIndianPhone(user.phone) !== normalizedPhone) {
-      return res.status(401).json({ message: "The verified mobile number does not match this account." });
-    }
-  } else {
-    user.phone = normalizedPhone;
-    await user.save();
+  if (!user.phone) {
+    return res.status(400).json({ message: "This account does not have a mobile number on file. Please contact support." });
   }
 
   await ensureFreeOnboardingValidity(user);
 
-  const token = generateToken({ id: user._id, role: user.role });
+  const challenge = await createOtpChallenge(user, "login");
+  return res.status(202).json({
+    ...challenge,
+    message: "OTP sent to your registered mobile number.",
+  });
+};
 
-  try {
-    await sendLoginAlert(user);
-    console.log(`[login] Login alert email sent to ${user.email}`);
-  } catch (error) {
-    console.error("[login] Login alert email failed:", error.message);
+const verifyOtp = async (req, res) => {
+  const { challengeId, otp, firebaseIdToken } = req.body;
+  const user = await User.findOne({ "otpVerification.challengeId": challengeId });
+
+  if (!user || !user.otpVerification?.challengeId) {
+    return res.status(404).json({ message: "OTP challenge not found. Please request a new code." });
   }
 
-  return res.json({
-    token,
-    user: sanitizeUser(user),
+  if (!user.otpVerification.expiresAt || new Date(user.otpVerification.expiresAt) < new Date()) {
+    clearOtpState(user);
+    await user.save();
+    return res.status(410).json({ message: "OTP expired. Please request a new code." });
+  }
+
+  if ((user.otpVerification.attempts || 0) >= (user.otpVerification.maxAttempts || OTP_MAX_ATTEMPTS)) {
+    clearOtpState(user);
+    await user.save();
+    return res.status(429).json({ message: "Too many invalid OTP attempts. Please request a new code." });
+  }
+
+  let otpMatches = false;
+
+  if (firebaseIdToken) {
+    try {
+      const firebaseUser = await verifyFirebaseIdToken(firebaseIdToken);
+      const firebasePhone = normalizeIndianPhone(firebaseUser.phone_number);
+      otpMatches = Boolean(firebasePhone && firebasePhone === normalizeIndianPhone(user.phone));
+    } catch (error) {
+      return res.status(error.statusCode || 401).json({ message: error.message || "Firebase phone verification failed." });
+    }
+  } else {
+    otpMatches = user.otpVerification.codeHash === hashOtp(otp);
+  }
+
+  if (!otpMatches) {
+    user.otpVerification.attempts = (user.otpVerification.attempts || 0) + 1;
+    await user.save();
+    return res.status(401).json({ message: "Incorrect OTP. Please try again." });
+  }
+
+  const purpose = user.otpVerification.purpose;
+  user.isPhoneVerified = true;
+  user.otpVerification.verifiedAt = new Date();
+  clearOtpState(user);
+  await user.save();
+
+  if (purpose === "signup") {
+    try {
+      await sendWelcomeEmail(user, "signing up");
+      console.log(`[signup] Welcome email sent to ${user.email}`);
+    } catch (error) {
+      console.error("[signup] Welcome email failed:", error.message);
+    }
+  }
+
+  if (purpose === "login") {
+    try {
+      await sendLoginAlert(user);
+      console.log(`[login] Login alert email sent to ${user.email}`);
+    } catch (error) {
+      console.error("[login] Login alert email failed:", error.message);
+    }
+  }
+
+  await ensureFreeOnboardingValidity(user);
+  return res.json(issueAuthResponse(user));
+};
+
+const resendOtpCode = async (req, res) => {
+  const { challengeId } = req.body;
+  const user = await User.findOne({ "otpVerification.challengeId": challengeId });
+
+  if (!user || !user.otpVerification?.challengeId) {
+    return res.status(404).json({ message: "OTP challenge not found. Please start again." });
+  }
+
+  const resendAt = user.otpVerification.resendAvailableAt ? new Date(user.otpVerification.resendAvailableAt) : null;
+  if (resendAt && resendAt > new Date()) {
+    const secondsRemaining = Math.max(1, Math.ceil((resendAt.getTime() - Date.now()) / 1000));
+    return res.status(429).json({ message: `Please wait ${secondsRemaining}s before requesting another OTP.` });
+  }
+
+  const challenge = await createOtpChallenge(user, user.otpVerification.purpose || "login");
+  return res.status(202).json({
+    ...challenge,
+    message: "A fresh OTP has been sent.",
   });
 };
 
@@ -328,6 +554,7 @@ const socialLogin = async (req, res) => {
       password: Math.random().toString(36).slice(2) + Date.now().toString(36),
       role: "buyer",
       canPostProperty: false,
+      isPhoneVerified: false,
       ...buildFreeOnboardingPack(),
     });
   }
@@ -343,11 +570,7 @@ const socialLogin = async (req, res) => {
 
   await ensureFreeOnboardingValidity(user);
 
-  const jwt = generateToken({ id: user._id, role: user.role });
-  return res.json({
-    token: jwt,
-    user: sanitizeUser(user),
-  });
+  return res.json(issueAuthResponse(user));
 };
 
 const me = async (req, res) => {
@@ -359,8 +582,12 @@ module.exports = {
   signupValidators,
   loginValidators,
   socialLoginValidators,
+  verifyOtpValidators,
+  resendOtpValidators,
   signup,
   login,
+  verifyOtp,
+  resendOtpCode,
   socialLogin,
   me,
 };

@@ -1,8 +1,13 @@
-import { Suspense, lazy, useEffect } from "react";
-import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { Suspense, useEffect } from "react";
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
-import { initEmailJs } from "./services/emailService";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Loader from "./components/Loader";
@@ -10,48 +15,115 @@ import PageLoader from "./components/PageLoader";
 import { PrivateRouteSeo } from "./components/SeoHead";
 import ProtectedRoute from "./components/ProtectedRoute";
 import useLowMotionDevice from "./hooks/useLowMotionDevice";
+import { lazyRoute, preloadLazyRoutes } from "./utils/lazyRoute";
 
-const HomePage = lazy(() => import("./pages/HomePage"));
-const AboutPage = lazy(() => import("./pages/AboutPage"));
-const ContactPage = lazy(() => import("./pages/ContactPage"));
-const ServicesPage = lazy(() => import("./pages/ServicesPage"));
-const ListingPage = lazy(() => import("./pages/ListingPage"));
-const PropertyDetailPage = lazy(() => import("./pages/PropertyDetailPage"));
-const AuthPage = lazy(() => import("./pages/AuthPage"));
-const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
-const DashboardRouterPage = lazy(() => import("./pages/DashboardRouterPage"));
-const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
-const PostPropertyPage = lazy(() => import("./pages/PostPropertyPage"));
-const EditPropertyPage = lazy(() => import("./pages/EditPropertyPage"));
-const PlansPage = lazy(() => import("./pages/PlansPage"));
-const ServiceRequestPage = lazy(() => import("./pages/ServiceRequestPage"));
-const BankLoansPage = lazy(() => import("./pages/BankLoansPage"));
-const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const HomePage = lazyRoute(() => import("./pages/HomePage"));
+const AboutPage = lazyRoute(() => import("./pages/AboutPage"));
+const ContactPage = lazyRoute(() => import("./pages/ContactPage"));
+const ServicesPage = lazyRoute(() => import("./pages/ServicesPage"));
+const ListingPage = lazyRoute(() => import("./pages/ListingPage"));
+const PropertyDetailPage = lazyRoute(
+  () => import("./pages/PropertyDetailPage"),
+);
+const AuthPage = lazyRoute(() => import("./pages/AuthPage"));
+const AdminLoginPage = lazyRoute(() => import("./pages/AdminLoginPage"));
+const DashboardRouterPage = lazyRoute(
+  () => import("./pages/DashboardRouterPage"),
+);
+const AdminDashboardPage = lazyRoute(
+  () => import("./pages/AdminDashboardPage"),
+);
+const PostPropertyPage = lazyRoute(() => import("./pages/PostPropertyPage"));
+const EditPropertyPage = lazyRoute(() => import("./pages/EditPropertyPage"));
+const PlansPage = lazyRoute(() => import("./pages/PlansPage"));
+const ServiceRequestPage = lazyRoute(
+  () => import("./pages/ServiceRequestPage"),
+);
+const BankLoansPage = lazyRoute(() => import("./pages/BankLoansPage"));
+const NotFoundPage = lazyRoute(() => import("./pages/NotFoundPage"));
 
 // Pages that manage their own full-height layout (sidebars etc.)
-const FULL_HEIGHT_PATHS = ["/listings", "/dashboard", "/admin/dashboard", "/auth", "/admin/login"];
-const PRIVATE_PATHS = ["/auth", "/dashboard", "/admin", "/post-property", "/edit-property", "/plans", "/request-service"];
+const FULL_HEIGHT_PATHS = [
+  "/listings",
+  "/dashboard",
+  "/admin/dashboard",
+  "/auth",
+  "/admin/login",
+];
+const PRIVATE_PATHS = [
+  "/auth",
+  "/dashboard",
+  "/admin",
+  "/post-property",
+  "/edit-property",
+  "/plans",
+  "/request-service",
+];
 
 const RouteFallback = () => <Loader text="Loading page..." size={44} />;
 
 const pageTransition = {
   initial: { opacity: 0, y: 18 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
-  exit: { opacity: 0, y: -12, transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+  },
+  exit: {
+    opacity: 0,
+    y: -12,
+    transition: { duration: 0.2, ease: [0.4, 0, 1, 1] },
+  },
+};
+
+const idleCallback = (callback, timeout = 1200) => {
+  if (typeof window === "undefined") return () => {};
+  if ("requestIdleCallback" in window) {
+    const id = window.requestIdleCallback(callback, { timeout });
+    return () => window.cancelIdleCallback(id);
+  }
+
+  const id = window.setTimeout(callback, timeout);
+  return () => window.clearTimeout(id);
 };
 
 const AppShell = () => {
   const location = useLocation();
   const lowMotionDevice = useLowMotionDevice();
-  const isFullHeight = FULL_HEIGHT_PATHS.some((p) => location.pathname.startsWith(p));
-  const isPrivatePath = PRIVATE_PATHS.some((p) => location.pathname.startsWith(p));
-  const isDashboardRoute = location.pathname.startsWith("/dashboard") || location.pathname.startsWith("/admin/dashboard");
+  const isFullHeight = FULL_HEIGHT_PATHS.some((p) =>
+    location.pathname.startsWith(p),
+  );
+  const isPrivatePath = PRIVATE_PATHS.some((p) =>
+    location.pathname.startsWith(p),
+  );
+  const isDashboardRoute =
+    location.pathname.startsWith("/dashboard") ||
+    location.pathname.startsWith("/admin/dashboard");
   const isListingsRoute = location.pathname.startsWith("/listings");
   const isHomeRoute = location.pathname === "/";
 
   useEffect(() => {
-    initEmailJs();
+    return idleCallback(() => {
+      import("./services/emailService")
+        .then(({ initEmailJs }) => initEmailJs())
+        .catch(() => {});
+    }, 600);
   }, []);
+
+  useEffect(
+    () =>
+      idleCallback(() => {
+        preloadLazyRoutes([
+          AboutPage.preload,
+          ContactPage.preload,
+          ServicesPage.preload,
+          ListingPage.preload,
+          AuthPage.preload,
+          PlansPage.preload,
+        ]);
+      }, 1600),
+    [],
+  );
 
   useEffect(() => {
     document.documentElement.classList.toggle("low-motion-ui", lowMotionDevice);
@@ -91,9 +163,13 @@ const AppShell = () => {
     }, 50);
   }, [location.pathname, isListingsRoute]);
 
-  const hideNavbar = ["/admin/login"].some((p) => location.pathname.startsWith(p));
+  const hideNavbar = ["/admin/login"].some((p) =>
+    location.pathname.startsWith(p),
+  );
   const hideFooter =
-    ["/auth", "/admin/login"].some((p) => location.pathname.startsWith(p)) || isDashboardRoute || isListingsRoute;
+    ["/auth", "/admin/login"].some((p) => location.pathname.startsWith(p)) ||
+    isDashboardRoute ||
+    isListingsRoute;
 
   return (
     <MotionConfig reducedMotion={lowMotionDevice ? "always" : "never"}>
@@ -105,7 +181,7 @@ const AppShell = () => {
         {isPrivatePath ? <PrivateRouteSeo title="Account" /> : null}
         {!hideNavbar && <Navbar />}
         <main
-          className={`flex-1 ${isFullHeight || hideNavbar ? "" : isHomeRoute ? "pb-0" : isListingsRoute ? "" : "pt-4 pb-12 md:pt-6"} ${isListingsRoute ? "flex min-h-0 flex-col overflow-hidden" : ""} ${isDashboardRoute ? "flex min-h-0 flex-col overflow-hidden" : ""}`}
+          className={`flex-1 ${isFullHeight || hideNavbar ? "" : isHomeRoute ? "pb-0" : isListingsRoute ? "" : location.pathname.startsWith("/auth") ? "pb-0" : "pt-4 pb-12 md:pt-6"} ${isListingsRoute ? "flex min-h-0 flex-col overflow-hidden" : ""} ${isDashboardRoute ? "flex min-h-0 flex-col overflow-hidden" : ""}`}
         >
           <Suspense fallback={<RouteFallback />}>
             <AnimatePresence mode="wait">
@@ -128,11 +204,20 @@ const AppShell = () => {
                   <Route path="/services" element={<ServicesPage />} />
                   <Route path="/bank-loans" element={<BankLoansPage />} />
                   <Route path="/listings" element={<ListingPage />} />
-                  <Route path="/property/:id/:slug?" element={<PropertyDetailPage />} />
+                  <Route
+                    path="/property/:id/:slug?"
+                    element={<PropertyDetailPage />}
+                  />
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/admin/login" element={<AdminLoginPage />} />
-                  <Route path="/adminlogin" element={<Navigate to="/admin/login" replace />} />
-                  <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+                  <Route
+                    path="/adminlogin"
+                    element={<Navigate to="/admin/login" replace />}
+                  />
+                  <Route
+                    path="/admin"
+                    element={<Navigate to="/admin/login" replace />}
+                  />
                   <Route
                     path="/dashboard"
                     element={

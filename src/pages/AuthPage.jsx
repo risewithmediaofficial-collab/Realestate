@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { ShieldCheckIcon, EnvelopeIcon, LockClosedIcon, PhoneIcon, MapPinIcon, UserIcon, UserCircleIcon } from "../components/AppIcons";
 import BrandLogo from "../components/BrandLogo";
-import { loginUser, signupUser } from "../services/api/authApi";
+import { loginUser, resendOtp, signupUser, verifyOtp } from "../services/api/authApi";
 import useAuth from "../hooks/useAuth";
 import useScrollToTop from "../hooks/useScrollToTop";
+import { auth } from "../lib/firebase";
 
 const MotionDiv = motion.div;
+const AUTH_FORM = {
+  name: "",
+  email: "",
+  phone: "",
+  address: "",
+  password: "",
+  role: "buyer",
+};
 
 const fade = {
   hidden: { opacity: 0, y: 24 },
@@ -55,17 +65,74 @@ const AuthPage = () => {
   const redirectTo = location.state?.from?.pathname || "/dashboard";
 
   const [mode, setMode] = useState("login");
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    password: "",
-    role: "buyer",
-  });
+  const [step, setStep] = useState("credentials");
+  const [form, setForm] = useState(AUTH_FORM);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpState, setOtpState] = useState(null);
+  const [resendCountdown, setResendCountdown] = useState(0);
+  const [otpExpiryCountdown, setOtpExpiryCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [firebaseConfirmation, setFirebaseConfirmation] = useState(null);
+  const recaptchaVerifierRef = useRef(null);
 
   const onChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  useEffect(() => {
+    if (resendCountdown <= 0) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setResendCountdown((current) => Math.max(current - 1, 0));
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [resendCountdown]);
+
+  useEffect(() => {
+    if (otpExpiryCountdown <= 0) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setOtpExpiryCountdown((current) => Math.max(current - 1, 0));
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [otpExpiryCountdown]);
+
+  const resetOtpFlow = () => {
+    setStep("credentials");
+    setOtpCode("");
+    setOtpState(null);
+    setFirebaseConfirmation(null);
+    setResendCountdown(0);
+    setOtpExpiryCountdown(0);
+  };
+
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
+    resetOtpFlow();
+  };
+
+  const getRecaptchaVerifier = () => {
+    if (!recaptchaVerifierRef.current) {
+      recaptchaVerifierRef.current = new RecaptchaVerifier(auth, "firebase-recaptcha-container", {
+        size: "invisible",
+      });
+    }
+
+    return recaptchaVerifierRef.current;
+  };
+
+  const sendFirebaseOtp = async (challenge) => {
+    if (challenge.provider !== "firebase") return null;
+
+    const phoneNumber = challenge.firebasePhoneNumber;
+    if (!phoneNumber) {
+      throw new Error("Firebase phone number is missing from the OTP challenge.");
+    }
+
+    const confirmation = await signInWithPhoneNumber(auth, phoneNumber, getRecaptchaVerifier());
+    setFirebaseConfirmation(confirmation);
+    return confirmation;
+  };
 
   const submit = async (event) => {
     event.preventDefault();
@@ -73,15 +140,66 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      const payload = { ...form };
+      if (step === "otp") {
+        let firebaseIdToken = "";
 
-      const data = mode === "signup" ? await signupUser(payload) : await loginUser(payload);
-      login(data);
-      toast.success(mode === "signup" ? "Account created successfully" : "Welcome back");
-      scrollToTop();
-      navigate(redirectTo);
+        if (otpState?.provider === "firebase") {
+          if (!firebaseConfirmation) {
+            throw new Error("OTP session expired. Please resend the code.");
+          }
+
+          const firebaseCredential = await firebaseConfirmation.confirm(otpCode.trim());
+          firebaseIdToken = await firebaseCredential.user.getIdToken();
+        }
+
+        const data = await verifyOtp({
+          challengeId: otpState?.challengeId,
+          ...(firebaseIdToken ? { firebaseIdToken } : { otp: otpCode.trim() }),
+        });
+
+        login(data);
+        toast.success(mode === "signup" ? "Account verified successfully" : "Welcome back");
+        scrollToTop();
+        navigate(redirectTo);
+      } else {
+        const payload =
+          mode === "signup"
+            ? { ...form }
+            : {
+                email: form.email,
+                password: form.password,
+              };
+
+        const challenge = mode === "signup" ? await signupUser(payload) : await loginUser(payload);
+        await sendFirebaseOtp(challenge);
+        setOtpState(challenge);
+        setOtpCode("");
+        setStep("otp");
+        setResendCountdown(challenge.resendAvailableInSeconds || 0);
+        setOtpExpiryCountdown(challenge.expiresInSeconds || 0);
+        toast.success(challenge.message || "OTP sent successfully");
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Authentication failed");
+      toast.error(error.response?.data?.message || error.message || "Authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!otpState?.challengeId || resendCountdown > 0) return;
+
+    setLoading(true);
+    try {
+      const refreshedChallenge = await resendOtp({ challengeId: otpState.challengeId });
+      await sendFirebaseOtp(refreshedChallenge);
+      setOtpState(refreshedChallenge);
+      setOtpCode("");
+      setResendCountdown(refreshedChallenge.resendAvailableInSeconds || 0);
+      setOtpExpiryCountdown(refreshedChallenge.expiresInSeconds || 0);
+      toast.success(refreshedChallenge.message || "A new OTP has been sent");
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message || "Unable to resend OTP");
     } finally {
       setLoading(false);
     }
@@ -89,26 +207,43 @@ const AuthPage = () => {
 
   const isSignup = mode === "signup";
   const submitDisabled = loading;
-  const headingText = isSignup ? "Create your account" : "Welcome back";
-  const subText = isSignup
-    ? "Create a simple profile to browse listings, connect with sellers, and manage your property activity."
-    : "Sign in to access saved listings, leads, and account activity in one place.";
+  const isOtpStep = step === "otp";
+  const headingText = isOtpStep
+    ? "Verify your mobile number"
+    : isSignup
+      ? "Create your account"
+      : "Welcome back";
+  const subText = isOtpStep
+    ? `Enter the one-time password sent to ${otpState?.destination || "your registered mobile number"}.`
+    : isSignup
+      ? "Create a simple profile to browse listings, connect with sellers, and manage your property activity."
+      : "Sign in to access saved listings, leads, and account activity in one place.";
   const statusText = isSignup ? "New account" : "Secure access";
 
   return (
     <>
       <style>{`
         .auth-page {
-          min-height: 100vh;
+          min-height: calc(100vh - 178px);
+          max-height: calc(100vh - 178px);
           display: grid;
-          grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+          grid-template-columns: minmax(520px, 1fr) minmax(420px, 500px);
+          grid-template-areas: "hero form";
+          gap: clamp(28px, 4vw, 72px);
           background: #ffffff;
           font-family: 'Inter', sans-serif;
+          overflow: hidden;
+          padding: 0 clamp(36px, 5vw, 72px);
         }
         @media (max-width: 900px) {
           .auth-page {
             grid-template-columns: 1fr;
-            min-height: 100%;
+            grid-template-areas: "form";
+            gap: 0;
+            min-height: auto;
+            max-height: none;
+            overflow: visible;
+            padding: 0;
           }
           .auth-left {
             display: none !important;
@@ -116,17 +251,17 @@ const AuthPage = () => {
         }
 
         .auth-left {
-          position: sticky;
-          top: 0;
-          height: 100vh;
+          grid-area: hero;
+          height: 100%;
           overflow: hidden;
           background: #f8fafc;
           border-right: 1px solid #e5e7eb;
           display: flex;
           flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          padding: 56px 56px 56px;
+          justify-content: flex-start;
+          align-items: flex-start;
+          padding: clamp(28px, 4vh, 48px) 0 32px;
+          min-width: 0;
         }
         .auth-left-img {
           position: absolute;
@@ -145,7 +280,7 @@ const AuthPage = () => {
           position: relative;
           z-index: 1;
           max-width: 520px;
-          margin: 0 auto;
+          margin: 0;
           text-align: left;
         }
         .auth-left-logo {
@@ -156,7 +291,7 @@ const AuthPage = () => {
           border-radius: 18px;
           background: #ffffff;
           box-shadow: 0 12px 30px rgba(0, 66, 162, 0.08);
-          margin-bottom: 28px;
+          margin-bottom: 22px;
         }
         .auth-left-logo-img {
           width: 280px;
@@ -164,7 +299,7 @@ const AuthPage = () => {
         }
         .auth-left-heading {
           margin: 0 0 14px;
-          font-size: clamp(30px, 4vw, 52px);
+          font-size: clamp(30px, 3.4vw, 48px);
           font-weight: 800;
           color: #111111;
           line-height: 1.08;
@@ -175,14 +310,14 @@ const AuthPage = () => {
           margin: 0;
           max-width: 390px;
           font-size: 15px;
-          line-height: 1.75;
+          line-height: 1.65;
           color: #555555;
         }
         .auth-stats {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 12px;
-          margin-top: 34px;
+          margin-top: 28px;
           max-width: 460px;
         }
         @media (max-height: 820px) {
@@ -213,40 +348,68 @@ const AuthPage = () => {
         }
 
         .auth-right {
+          grid-area: form;
+          position: relative;
+          z-index: 3;
           display: flex;
           align-items: flex-start;
-          justify-content: center;
-          padding: 40px 28px 40px;
-          overflow-y: auto;
+          justify-content: flex-end;
+          padding: clamp(28px, 4vh, 48px) 0 32px;
+          overflow: visible;
           background: #ffffff;
-          height: 100vh;
+          height: 100%;
+          min-width: 0;
         }
         .auth-card {
+          position: relative;
+          z-index: 4;
           width: 100%;
-          max-width: 500px;
+          max-width: 460px;
+          flex: 0 0 min(460px, 100%);
         }
         .auth-card-signup {
           margin-top: -8px;
         }
         .auth-card-surface {
-          padding: 26px 32px 32px;
+          padding: 24px 30px 28px;
           border: 1px solid #e2e8f0;
           border-radius: 24px;
           background: #ffffff;
           box-shadow: 0 16px 32px rgba(17, 17, 17, 0.04);
+          max-height: calc(100vh - 220px);
+          overflow-y: auto;
+          overflow-x: hidden;
+        }
+        .auth-card-surface::-webkit-scrollbar {
+          width: 8px;
+        }
+        .auth-card-surface::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .auth-card-surface::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 4px;
+          transition: background 0.2s ease;
+        }
+        .auth-card-surface::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
         }
         @media (min-width: 1024px) {
           .auth-card-surface {
-            padding: 36px;
+            padding: 30px;
           }
         }
         @media (max-width: 900px) {
           .auth-right {
             padding: 18px 18px 32px;
+            justify-content: center;
+            overflow: visible;
+            height: auto;
           }
           .auth-card-surface {
             padding: 20px 22px 22px;
             border-radius: 22px;
+            max-height: calc(100vh - 150px);
           }
           .auth-card-signup {
             margin-top: 0;
@@ -327,7 +490,7 @@ const AuthPage = () => {
         }
         .auth-title {
           margin: 0;
-          font-size: clamp(30px, 3vw, 38px);
+          font-size: clamp(28px, 2.6vw, 36px);
           line-height: 1.1;
           font-weight: 800;
           color: #0f172a;
@@ -336,7 +499,7 @@ const AuthPage = () => {
         .auth-subtitle {
           margin: 12px 0 0;
           font-size: 15px;
-          line-height: 1.65;
+          line-height: 1.55;
           color: #64748b;
           max-width: 420px;
         }
@@ -344,7 +507,7 @@ const AuthPage = () => {
         .auth-fields {
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 14px;
         }
         .auth-field-wrap {
           display: flex;
@@ -362,7 +525,7 @@ const AuthPage = () => {
           position: relative;
           display: flex;
           align-items: center;
-          min-height: 56px;
+          min-height: 52px;
           border: 1px solid #dbe0e6;
           border-radius: 14px;
           background: #ffffff;
@@ -382,7 +545,7 @@ const AuthPage = () => {
         }
         .auth-input {
           width: 100%;
-          min-height: 56px;
+          min-height: 52px;
           border: none;
           background: transparent;
           color: #0f172a;
@@ -429,7 +592,7 @@ const AuthPage = () => {
 
         .auth-submit {
           width: 100%;
-          min-height: 58px;
+          min-height: 54px;
           border: none;
           border-radius: 10px;
           background: #f79e26;
@@ -450,6 +613,47 @@ const AuthPage = () => {
         .auth-submit:disabled {
           opacity: 0.7;
           cursor: not-allowed;
+        }
+        .auth-secondary-btn {
+          border: 1px solid #d5dce5;
+          background: #ffffff;
+          color: #0f172a;
+          border-radius: 10px;
+          min-height: 48px;
+          padding: 0 16px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+        }
+        .auth-secondary-btn:hover:not(:disabled) {
+          border-color: #94a3b8;
+          background: #f8fafc;
+          transform: translateY(-1px);
+        }
+        .auth-secondary-btn:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
+        .auth-otp-note {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 14px 16px;
+          border-radius: 16px;
+          border: 1px solid #cbd5e1;
+          background: #f8fafc;
+          color: #475569;
+          font-size: 13px;
+          line-height: 1.6;
+        }
+        .auth-otp-note strong {
+          color: #0f172a;
+        }
+        .auth-otp-note code {
+          font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+          font-size: 12px;
+          color: #b45309;
         }
 
         .auth-support-row {
@@ -540,6 +744,7 @@ const AuthPage = () => {
       `}</style>
 
       <div className="auth-page">
+        <div id="firebase-recaptcha-container" />
         <div className="auth-left">
           <img
             className="auth-left-img"
@@ -591,7 +796,7 @@ const AuthPage = () => {
                   type="button"
                   className={`auth-mode-btn ${!isSignup ? "is-active" : ""}`}
                   onClick={() => {
-                    setMode("login");
+                    switchMode("login");
                   }}
                 >
                   Sign In
@@ -600,7 +805,7 @@ const AuthPage = () => {
                   type="button"
                   className={`auth-mode-btn ${isSignup ? "is-active" : ""}`}
                   onClick={() => {
-                    setMode("signup");
+                    switchMode("signup");
                   }}
                 >
                   Create Account
@@ -616,93 +821,141 @@ const AuthPage = () => {
 
                   <form onSubmit={submit}>
                     <motion.div className="auth-fields" variants={stagger} initial="hidden" animate="show">
-                      {isSignup ? (
-                        <Field
-                          label="Full Name"
-                          icon={UserIcon}
-                          placeholder="Ravi Kumar"
-                          value={form.name}
-                          onChange={(event) => onChange("name", event.target.value)}
-                          required
-                        />
-                      ) : null}
+                      {isOtpStep ? (
+                        <>
+                          <Field
+                            label="One-Time Password"
+                            icon={ShieldCheckIcon}
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            maxLength={6}
+                            placeholder="Enter 6-digit OTP"
+                            value={otpCode}
+                            onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                            required
+                          />
 
-                      <Field
-                        label="Email Address"
-                        icon={EnvelopeIcon}
-                        type="email"
-                        placeholder="you@example.com"
-                        value={form.email}
-                        onChange={(event) => onChange("email", event.target.value)}
-                        required
-                      />
+                          <motion.div variants={item} className="auth-otp-note">
+                            <ShieldCheckIcon className="auth-free-badge-icon" />
+                            <span>
+                              OTP expires in <strong>{Math.max(0, otpExpiryCountdown)} seconds</strong>.
+                              {!isSignup ? " This keeps your account sign-in protected." : " We’ll activate your account right after verification."}
+                              {otpState?.developmentOtp ? (
+                                <>
+                                  {" "}
+                                  Dev OTP: <code>{otpState.developmentOtp}</code>
+                                </>
+                              ) : null}
+                            </span>
+                          </motion.div>
+                        </>
+                      ) : (
+                        <>
+                          {isSignup ? (
+                            <Field
+                              label="Full Name"
+                              icon={UserIcon}
+                              placeholder="Ravi Kumar"
+                              value={form.name}
+                              onChange={(event) => onChange("name", event.target.value)}
+                              required
+                            />
+                          ) : null}
 
-                      <Field
-                        label="Mobile Number"
-                        icon={PhoneIcon}
-                        type="tel"
-                        placeholder="9994005086"
-                        value={form.phone}
-                        onChange={(event) => onChange("phone", event.target.value)}
-                        required
-                      />
+                          <Field
+                            label="Email Address"
+                            icon={EnvelopeIcon}
+                            type="email"
+                            autoComplete="email"
+                            placeholder="you@example.com"
+                            value={form.email}
+                            onChange={(event) => onChange("email", event.target.value)}
+                            required
+                          />
 
-                      {isSignup ? (
-                        <Field
-                          label="Address"
-                          icon={MapPinIcon}
-                          placeholder="Hosur, Tamil Nadu"
-                          value={form.address}
-                          onChange={(event) => onChange("address", event.target.value)}
-                        />
-                      ) : null}
+                          {isSignup ? (
+                            <Field
+                              label="Mobile Number"
+                              icon={PhoneIcon}
+                              type="tel"
+                              inputMode="tel"
+                              autoComplete="tel"
+                              placeholder="9994005086"
+                              value={form.phone}
+                              onChange={(event) => onChange("phone", event.target.value)}
+                              required
+                            />
+                          ) : null}
 
-                      <Field
-                        label="Password"
-                        icon={LockClosedIcon}
-                        type="password"
-                        placeholder="Enter your password"
-                        value={form.password}
-                        onChange={(event) => onChange("password", event.target.value)}
-                        required
-                      />
+                          {isSignup ? (
+                            <Field
+                              label="Address"
+                              icon={MapPinIcon}
+                              placeholder="Hosur, Tamil Nadu"
+                              value={form.address}
+                              onChange={(event) => onChange("address", event.target.value)}
+                            />
+                          ) : null}
 
-                      {isSignup ? (
-                        <SelectField
-                          label="I Am A"
-                          icon={UserCircleIcon}
-                          value={form.role}
-                          onChange={(event) => onChange("role", event.target.value)}
-                        >
-                          <option value="buyer">Buyer / Tenant</option>
-                          <option value="seller">Property Seller</option>
-                          <option value="agent">Agent</option>
-                          <option value="broker">Broker</option>
-                          <option value="builder">Builder</option>
-                          <option value="customer">Customer</option>
-                        </SelectField>
-                      ) : null}
+                          <Field
+                            label="Password"
+                            icon={LockClosedIcon}
+                            type="password"
+                            autoComplete={isSignup ? "new-password" : "current-password"}
+                            placeholder="Enter your password"
+                            value={form.password}
+                            onChange={(event) => onChange("password", event.target.value)}
+                            required
+                          />
 
-                      {isSignup ? (
-                        <motion.div variants={item} className="auth-free-badge">
-                          <ShieldCheckIcon className="auth-free-badge-icon" />
-                          <span>
-                            New accounts include <strong>1 free property listing</strong> for 90 days.
-                          </span>
-                        </motion.div>
-                      ) : null}
+                          {isSignup ? (
+                            <SelectField
+                              label="I Am A"
+                              icon={UserCircleIcon}
+                              value={form.role}
+                              onChange={(event) => onChange("role", event.target.value)}
+                            >
+                              <option value="buyer">Buyer / Tenant</option>
+                              <option value="seller">Property Seller</option>
+                              <option value="agent">Agent</option>
+                              <option value="broker">Broker</option>
+                              <option value="builder">Builder</option>
+                              <option value="customer">Customer</option>
+                            </SelectField>
+                          ) : null}
+
+                          {isSignup ? (
+                            <motion.div variants={item} className="auth-free-badge">
+                              <ShieldCheckIcon className="auth-free-badge-icon" />
+                              <span>
+                                New accounts include <strong>1 free property listing</strong> for 90 days.
+                              </span>
+                            </motion.div>
+                          ) : null}
+                        </>
+                      )}
 
                       <motion.div variants={item}>
                         <button type="submit" className="auth-submit" disabled={submitDisabled}>
                           {loading ? <span className="auth-spinner" /> : null}
-                          {loading ? "Please wait..." : isSignup ? "Create Account" : "Sign In"}
+                          {loading
+                            ? "Please wait..."
+                            : isOtpStep
+                              ? "Verify & Continue"
+                              : isSignup
+                                ? "Send OTP"
+                                : "Send Login OTP"}
                         </button>
                       </motion.div>
                     </motion.div>
 
                     <div className="auth-support-row">
                       <div className="auth-support-copy">
-                        {isSignup ? (
+                        {isOtpStep ? (
+                          <span>
+                            Sending to <strong>{otpState?.destination || "your mobile number"}</strong>
+                          </span>
+                        ) : isSignup ? (
                           <span>
                             Already registered? <strong>Sign in to continue.</strong>
                           </span>
@@ -714,22 +967,44 @@ const AuthPage = () => {
                       </div>
 
                       <div className="auth-support-actions">
-                        <button
-                          type="button"
-                          className="auth-toggle-btn"
-                          onClick={() => {
-                            setMode((currentMode) => (currentMode === "login" ? "signup" : "login"));
-                          }}
-                        >
-                          {isSignup ? "Back to Sign In" : "Create Account"}
-                        </button>
+                        {isOtpStep ? (
+                          <>
+                            <button
+                              type="button"
+                              className="auth-secondary-btn"
+                              onClick={handleResendOtp}
+                              disabled={loading || resendCountdown > 0}
+                            >
+                              {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : "Resend OTP"}
+                            </button>
+                            <button
+                              type="button"
+                              className="auth-toggle-btn"
+                              onClick={resetOtpFlow}
+                            >
+                              Edit Details
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            className="auth-toggle-btn"
+                            onClick={() => {
+                              switchMode(isSignup ? "login" : "signup");
+                            }}
+                          >
+                            {isSignup ? "Back to Sign In" : "Create Account"}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </form>
 
                   <div className="auth-security-note">
                     <ShieldCheckIcon className="auth-security-icon" />
-                    Secure sign-in for saved listings, leads, and account activity.
+                    {isOtpStep
+                      ? "Your one-time password is short-lived and verified securely before access is granted."
+                      : "Secure sign-in for saved listings, leads, and account activity."}
                   </div>
                 </motion.div>
               </AnimatePresence>
