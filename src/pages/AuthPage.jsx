@@ -183,12 +183,12 @@ const AuthPage = () => {
   const submitDisabled = loading;
   const isOtpStep = step === "otp";
   const headingText = isOtpStep
-    ? "Verify your mobile number"
+    ? "Verify your email address"
     : isSignup
       ? "Create your account"
       : "Welcome back";
   const subText = isOtpStep
-    ? `Enter the one-time password sent to ${otpState?.destination || "your registered mobile number"}.`
+    ? `Enter the one-time password sent to ${otpState?.destination || "your email address"}.`
     : isSignup
       ? "Create a simple profile to browse listings, connect with sellers, and manage your property activity."
       : "Sign in to access saved listings, leads, and account activity in one place.";
@@ -812,7 +812,7 @@ const AuthPage = () => {
                             <ShieldCheckIcon className="auth-free-badge-icon" />
                             <span>
                               OTP expires in <strong>{Math.max(0, otpExpiryCountdown)} seconds</strong>.
-                              {!isSignup ? " This keeps your account sign-in protected." : " We’ll activate your account right after verification."}
+                              {!isSignup ? " This keeps your account sign-in protected." : " We’ll activate your account right after email verification."}
                               {otpState?.developmentOtp ? (
                                 <>
                                   {" "}
@@ -848,7 +848,7 @@ const AuthPage = () => {
 
                           {isSignup ? (
                             <Field
-                              label="Mobile Number"
+                              label="Mobile Number (Optional)"
                               icon={PhoneIcon}
                               type="tel"
                               inputMode="tel"
@@ -856,7 +856,6 @@ const AuthPage = () => {
                               placeholder="9994005086"
                               value={form.phone}
                               onChange={(event) => onChange("phone", event.target.value)}
-                              required
                             />
                           ) : (
                             <Field
@@ -937,7 +936,7 @@ const AuthPage = () => {
                       <div className="auth-support-copy">
                         {isOtpStep ? (
                           <span>
-                            Sending to <strong>{otpState?.destination || "your mobile number"}</strong>
+                            Sending to <strong>{otpState?.destination || "your email address"}</strong>
                           </span>
                         ) : isSignup ? (
                           <span>
@@ -987,7 +986,7 @@ const AuthPage = () => {
                   <div className="auth-security-note">
                     <ShieldCheckIcon className="auth-security-icon" />
                     {isOtpStep
-                      ? "Your one-time password is short-lived and verified securely before access is granted."
+                      ? "Your one-time password is short-lived and securely verified before access is granted."
                       : "Secure sign-in for saved listings, leads, and account activity."}
                   </div>
                 </motion.div>

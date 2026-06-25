@@ -20,9 +20,10 @@ const userSchema = new mongoose.Schema(
       default: "active",
     },
     isPhoneVerified: { type: Boolean, default: false },
+    isEmailVerified: { type: Boolean, default: false },
     otpVerification: {
       challengeId: { type: String, default: "" },
-      purpose: { type: String, enum: ["signup", "login", ""], default: "" },
+      purpose: { type: String, enum: ["signup", "email_signup", "login", ""], default: "" },
       codeHash: { type: String, default: "" },
       expiresAt: { type: Date, default: null },
       resendAvailableAt: { type: Date, default: null },

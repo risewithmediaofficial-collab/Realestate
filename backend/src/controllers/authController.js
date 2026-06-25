@@ -6,7 +6,7 @@ const generateToken = require("../utils/generateToken");
 const sendEmail = require("../utils/sendEmail");
 const generateHtmlEmail = require("../utils/emailFormatter");
 const { sendWelcomeTemplateEmail } = require("../utils/sendEmailJs");
-const { sendOtp, hasMsg91Config } = require("../utils/sendOtp");
+const { sendEmailOtp, hasMsg91EmailConfig } = require("../utils/sendEmailOtp");
 
 const FREE_POST_VALIDITY_DAYS = 90;
 const OTP_EXPIRY_MINUTES = Math.max(Number(process.env.OTP_EXPIRY_MINUTES) || 5, 1);
@@ -14,31 +14,20 @@ const OTP_RESEND_COOLDOWN_SECONDS = Math.max(Number(process.env.OTP_RESEND_COOLD
 const OTP_MAX_ATTEMPTS = Math.max(Number(process.env.OTP_MAX_ATTEMPTS) || 5, 3);
 const OTP_HASH_SECRET = process.env.OTP_SECRET || process.env.JWT_SECRET || "myhosurproperty-otp-secret";
 
+const EMAIL_OTP_PROVIDER = hasMsg91EmailConfig ? "msg91_email" : "development";
+
 const addDays = (date, days) => {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
   return next;
 };
 
-const normalizeIndianPhone = (value) => {
-  const digits = String(value || "").replace(/\D/g, "");
-
-  if (digits.length === 10) {
-    return `91${digits}`;
-  }
-
-  if (digits.length === 12 && digits.startsWith("91")) {
-    return digits;
-  }
-
-  return "";
-};
-
-const maskPhoneNumber = (phone) => {
-  const normalized = normalizeIndianPhone(phone);
-  if (!normalized) return "your mobile number";
-  const localNumber = normalized.slice(-10);
-  return `+91 ${localNumber.slice(0, 2)}XXXX${localNumber.slice(-4)}`;
+// Mask email: show first char + *** + domain, e.g. s***@gmail.com
+const maskEmail = (email) => {
+  if (!email || !email.includes("@")) return "your email address";
+  const [local, domain] = email.split("@");
+  const visible = local.length > 1 ? local[0] : local;
+  return `${visible}***@${domain}`;
 };
 
 const buildFreeOnboardingPack = () => {
@@ -102,7 +91,7 @@ const ensureFreeOnboardingValidity = async (user) => {
 const signupValidators = [
   body("name").trim().notEmpty(),
   body("email").isEmail().normalizeEmail(),
-  body("phone").trim().notEmpty(),
+  body("phone").optional().trim(),
   body("password").isLength({ min: 6 }),
   body("role").optional().isIn(["buyer", "customer", "seller", "agent", "broker", "builder", "admin"]),
   body("address").optional().trim(),
@@ -146,6 +135,7 @@ const sanitizeUser = (user) => ({
   phone: user.phone,
   address: user.address,
   isPhoneVerified: Boolean(user.isPhoneVerified),
+  isEmailVerified: Boolean(user.isEmailVerified),
   freePost: user.freePost,
   activePlan: user.activePlan,
   savedProperties: user.savedProperties,
@@ -169,17 +159,6 @@ const clearOtpState = (user) => {
 
 const getClientUrl = () => process.env.CLIENT_URL || "http://localhost:5173";
 
-const ensureValidPhone = (phone) => {
-  const normalizedPhone = normalizeIndianPhone(phone);
-
-  if (!normalizedPhone) {
-    const error = new Error("Enter a valid Indian mobile number.");
-    error.statusCode = 400;
-    throw error;
-  }
-
-  return { normalizedPhone };
-};
 
 const hashOtp = (otp) =>
   crypto.createHash("sha256").update(`${otp}:${OTP_HASH_SECRET}`).digest("hex");
@@ -208,10 +187,10 @@ const buildOtpResponse = (user, meta = {}) => {
     requiresOtp: true,
     challengeId: user.otpVerification?.challengeId,
     purpose: user.otpVerification?.purpose,
-    destination: maskPhoneNumber(user.phone),
+    destination: maskEmail(user.email),
     expiresInSeconds,
     resendAvailableInSeconds,
-    provider: meta.provider || (hasMsg91Config ? "msg91" : "development"),
+    provider: meta.provider || EMAIL_OTP_PROVIDER,
     ...(meta.developmentOtp ? { developmentOtp: meta.developmentOtp } : {}),
   };
 };
@@ -272,8 +251,9 @@ const createOtpChallenge = async (user, purpose) => {
 
   await user.save();
 
-  const delivery = await sendOtp({
-    phoneNumber: user.phone,
+  const delivery = await sendEmailOtp({
+    email: user.email,
+    name: user.name,
     otp,
     purpose,
   });
@@ -343,38 +323,24 @@ const issueAuthResponse = (user) => ({
   user: sanitizeUser(user),
 });
 
-const findReusableSignupUser = async ({ email, normalizedPhone }) => {
+const findReusableSignupUser = async ({ email }) => {
   const existingByEmail = await User.findOne({ email });
-  const existingByPhone = await User.findOne({ phone: normalizedPhone });
 
   if (existingByEmail && existingByEmail.status === "deactivated") {
     return { blocked: true, message: "This email belongs to a deactivated account. Please contact support." };
   }
 
-  if (existingByPhone && existingByPhone.status === "deactivated") {
-    return { blocked: true, message: "This mobile number belongs to a deactivated account. Please contact support." };
-  }
-
-  if (existingByEmail && existingByEmail.isPhoneVerified) {
+  if (existingByEmail && existingByEmail.isEmailVerified) {
     return { blocked: true, message: "Email already in use" };
   }
 
-  if (existingByPhone && existingByPhone.isPhoneVerified) {
-    return { blocked: true, message: "Mobile number already in use" };
-  }
-
-  if (existingByEmail && existingByPhone && String(existingByEmail._id) !== String(existingByPhone._id)) {
-    return { blocked: true, message: "Email or mobile number is already reserved by another account." };
-  }
-
-  return { user: existingByEmail || existingByPhone || null };
+  return { user: existingByEmail || null };
 };
 
 const signup = async (req, res) => {
   const { name, email, password, phone, address, role = "buyer" } = req.body;
-  const { normalizedPhone } = ensureValidPhone(phone);
 
-  const lookup = await findReusableSignupUser({ email, normalizedPhone });
+  const lookup = await findReusableSignupUser({ email });
   if (lookup.blocked) {
     return res.status(409).json({ message: lookup.message });
   }
@@ -386,43 +352,46 @@ const signup = async (req, res) => {
       name,
       email,
       password,
-      phone: normalizedPhone,
+      phone: phone ? String(phone).trim() : undefined,
       address,
       role,
       isPhoneVerified: false,
+      isEmailVerified: false,
       ...buildFreeOnboardingPack(),
     });
   } else {
     user.name = name;
     user.email = email;
     user.password = password;
-    user.phone = normalizedPhone;
+    if (phone) user.phone = String(phone).trim();
     user.address = address;
     user.role = role;
     user.canPostProperty = true;
     user.isPhoneVerified = false;
+    user.isEmailVerified = false;
     Object.assign(user, buildFreeOnboardingPack());
   }
 
   clearOtpState(user);
   await user.save();
 
-  const challenge = await createOtpChallenge(user, "signup");
+  const challenge = await createOtpChallenge(user, "email_signup");
   return res.status(202).json({
     ...challenge,
-    message: "OTP sent to your mobile number. Verify to activate your account.",
+    message: "OTP sent to your email address. Verify to activate your account.",
   });
 };
 
 const login = async (req, res) => {
   const { email, phone, password } = req.body;
-  
+
   let user = null;
   if (email) {
     user = await User.findOne({ email });
   } else if (phone) {
-    const normalizedPhone = normalizeIndianPhone(phone);
-    user = await User.findOne({ phone: normalizedPhone });
+    const normalizedPhone = String(phone).trim().replace(/\D/g, "");
+    const withCountry = normalizedPhone.length === 10 ? `91${normalizedPhone}` : normalizedPhone;
+    user = await User.findOne({ phone: withCountry }) || await User.findOne({ phone: normalizedPhone });
   }
 
   if (!user || !(await user.comparePassword(password))) {
@@ -431,10 +400,6 @@ const login = async (req, res) => {
 
   if (user.status === "deactivated") {
     return res.status(403).json({ message: "Your account has been deactivated by the admin." });
-  }
-
-  if (!user.phone) {
-    return res.status(400).json({ message: "This account does not have a mobile number on file. Please contact support." });
   }
 
   await ensureFreeOnboardingValidity(user);
@@ -478,12 +443,13 @@ const verifyOtp = async (req, res) => {
   }
 
   const purpose = user.otpVerification.purpose;
-  user.isPhoneVerified = true;
+  user.isEmailVerified = true;
+  user.isPhoneVerified = true; // Keep legacy flag in sync
   user.otpVerification.verifiedAt = new Date();
   clearOtpState(user);
   await user.save();
 
-  if (purpose === "signup") {
+  if (purpose === "signup" || purpose === "email_signup") {
     try {
       await sendWelcomeEmail(user, "signing up");
       console.log(`[signup] Welcome email sent to ${user.email}`);
