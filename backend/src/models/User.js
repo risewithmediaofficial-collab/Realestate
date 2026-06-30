@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
     isEmailVerified: { type: Boolean, default: false },
     otpVerification: {
       challengeId: { type: String, default: "" },
-      purpose: { type: String, enum: ["signup", "email_signup", "login", ""], default: "" },
+      purpose: { type: String, enum: ["signup", "email_signup", "login", "forgot_password", ""], default: "" },
       codeHash: { type: String, default: "" },
       expiresAt: { type: Date, default: null },
       resendAvailableAt: { type: Date, default: null },

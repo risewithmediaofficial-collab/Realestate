@@ -61,10 +61,8 @@ const normalizePhone = (phone) => {
 const sendWhatsAppOtpViaMsg91 = async ({ phone, otp, purpose }) => {
   const formattedPhone = normalizePhone(phone);
 
-  // Determine template based on purpose (forgot_password / login vs signup)
-  const templateName = (purpose === "forgot_password" || purpose === "login")
-    ? MSG91_WHATSAPP_FORGOT_PASSWORD_TEMPLATE_NAME
-    : MSG91_WHATSAPP_TEMPLATE_NAME;
+  // Always use the main template name
+  const templateName = MSG91_WHATSAPP_TEMPLATE_NAME;
 
   // ── Payload exactly matching MSG91 API docs ─────────────────────────────────
   const payload = {
