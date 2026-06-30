@@ -71,3 +71,5 @@ export { default as UsersIcon } from "@mui/icons-material/GroupsOutlined";
 export { default as VillaIcon } from "@mui/icons-material/VillaOutlined";
 export { default as WrenchScrewdriverIcon } from "@mui/icons-material/ConstructionOutlined";
 export { default as XMarkIcon } from "@mui/icons-material/CloseOutlined";
+export { default as EyeIcon } from "@mui/icons-material/VisibilityOutlined";
+export { default as EyeSlashIcon } from "@mui/icons-material/VisibilityOffOutlined";

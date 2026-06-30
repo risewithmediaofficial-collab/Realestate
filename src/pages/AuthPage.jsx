@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheckIcon, EnvelopeIcon, LockClosedIcon, PhoneIcon, MapPinIcon, UserIcon, UserCircleIcon } from "../components/AppIcons";
+import { ShieldCheckIcon, EnvelopeIcon, LockClosedIcon, PhoneIcon, MapPinIcon, UserIcon, UserCircleIcon, EyeIcon, EyeSlashIcon } from "../components/AppIcons";
 import BrandLogo from "../components/BrandLogo";
-import { loginUser, resendOtp, signupUser, verifyOtp } from "../services/api/authApi";
+import { loginUser, resendOtp, signupUser, verifyOtp as verifyOtpApi, verifyWidgetToken, forgotPassword, resetPassword } from "../services/api/authApi";
 import useAuth from "../hooks/useAuth";
 import useScrollToTop from "../hooks/useScrollToTop";
 
@@ -55,6 +55,60 @@ const SelectField = ({ label, icon: Icon, children, ...props }) => (
   </MotionDiv>
 );
 
+const PasswordField = ({ label, icon: Icon, showForgotPasswordLink, onForgotPasswordClick, ...props }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  return (
+    <MotionDiv variants={item} className="auth-field-wrap">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <label className="auth-label">{label}</label>
+        {showForgotPasswordLink && (
+          <button
+            type="button"
+            className="auth-toggle-btn"
+            style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}
+            onClick={onForgotPasswordClick}
+          >
+            Forgot Password?
+          </button>
+        )}
+      </div>
+      <div className="auth-input-shell" style={{ position: "relative" }}>
+        {Icon ? <Icon className="auth-input-icon" /> : null}
+        <input
+          type={showPassword ? "text" : "password"}
+          className={`auth-input ${Icon ? "auth-input-with-icon" : ""}`}
+          style={{ paddingRight: "48px" }}
+          {...props}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          style={{
+            position: "absolute",
+            right: "12px",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            color: "#94a3b8",
+            padding: "0 8px",
+            zIndex: 5,
+          }}
+        >
+          {showPassword ? (
+            <EyeSlashIcon style={{ width: "20px", height: "20px" }} />
+          ) : (
+            <EyeIcon style={{ width: "20px", height: "20px" }} />
+          )}
+        </button>
+      </div>
+    </MotionDiv>
+  );
+};
+
 const AuthPage = () => {
   const navigate = useNavigate();
   const scrollToTop = useScrollToTop();
@@ -70,8 +124,101 @@ const AuthPage = () => {
   const [resendCountdown, setResendCountdown] = useState(0);
   const [otpExpiryCountdown, setOtpExpiryCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [widgetReady, setWidgetReady] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
 
   const onChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  useEffect(() => {
+    // Setup MSG91 OTP Widget configuration
+    window.configuration = {
+      widgetId: "366665654b6e353536353634",
+      tokenAuth: "522920Tfroc6Ag56a22618dP1",
+      exposeMethods: true,
+      exposedMethod: true,
+      container: "otp-container",
+      success: (data) => {
+        console.log("MSG91 widget verified successfully on frontend:", data);
+      },
+      failure: (error) => {
+        console.error("MSG91 widget failed on frontend:", error);
+      }
+    };
+
+    const existingScript = document.getElementById("msg91-otp-script");
+    if (existingScript) {
+      if (typeof window.initSendOTP === "function") {
+        try {
+          window.initSendOTP(window.configuration);
+          setWidgetReady(true);
+          console.log("MSG91 widget re-initialized from existing script.");
+        } catch (e) {
+          console.error("Error re-calling initSendOTP:", e);
+        }
+      } else {
+        const handleLoad = () => {
+          if (typeof window.initSendOTP === "function") {
+            try {
+              window.initSendOTP(window.configuration);
+              setWidgetReady(true);
+              console.log("MSG91 widget initialized after existing script load event.");
+            } catch (e) {
+              console.error("Error calling initSendOTP after load:", e);
+            }
+          }
+        };
+        existingScript.addEventListener("load", handleLoad);
+        return () => {
+          existingScript.removeEventListener("load", handleLoad);
+        };
+      }
+      return () => {};
+    }
+
+    let scriptLoaded = false;
+    const urls = [
+      "https://verify.msg91.com/otp-provider.js",
+      "https://verify.phone91.com/otp-provider.js"
+    ];
+
+    let index = 0;
+    const attemptLoad = () => {
+      if (scriptLoaded) return;
+      
+      const s = document.createElement("script");
+      s.src = urls[index];
+      s.async = true;
+      s.id = "msg91-otp-script";
+      
+      s.onload = () => {
+        scriptLoaded = true;
+        if (typeof window.initSendOTP === "function") {
+          try {
+            window.initSendOTP(window.configuration);
+            setWidgetReady(true);
+            console.log("MSG91 widget script loaded and initialized successfully.");
+          } catch (e) {
+            console.error("Error calling initSendOTP:", e);
+          }
+        }
+      };
+
+      s.onerror = () => {
+        index++;
+        if (index < urls.length) {
+          attemptLoad();
+        } else {
+          console.warn("Failed to load MSG91 SendOTP scripts. Falling back to backend OTP handling.");
+        }
+      };
+
+      document.head.appendChild(s);
+    };
+
+    attemptLoad();
+
+    return () => {};
+  }, []);
 
   useEffect(() => {
     if (resendCountdown <= 0) return undefined;
@@ -96,6 +243,7 @@ const AuthPage = () => {
   const resetOtpFlow = () => {
     setStep("credentials");
     setOtpCode("");
+    setNewPassword("");
     setOtpState(null);
     setResendCountdown(0);
     setOtpExpiryCountdown(0);
@@ -109,23 +257,114 @@ const AuthPage = () => {
   const submit = async (event) => {
     event.preventDefault();
 
+    // ── Hard guard: login mode NEVER shows OTP. If step is somehow "otp" from
+    //    a stale signup session, reset it and re-submit as a normal login.
+    if (mode === "login" && (step === "otp" || step === "forgot_otp")) {
+      resetOtpFlow();
+      setLoading(false);
+      return;
+    }
+
     // Validation for login mode
-    if (mode === "login" && !form.email && !form.phone) {
-      toast.error("Please enter your email address or mobile number");
+    if (mode === "login" && !form.phone) {
+      toast.error("Please enter your WhatsApp mobile number");
+      return;
+    }
+
+    if (mode === "forgot_password" && !form.email && !form.phone) {
+      toast.error("Please enter your email address or mobile number to reset password");
       return;
     }
 
     setLoading(true);
 
     try {
-      if (step === "otp") {
-        const data = await verifyOtp({
-          challengeId: otpState?.challengeId,
+      if (step === "forgot_otp") {
+        if (!otpState?.challengeId) {
+          toast.error("OTP session expired or invalid. Please start again.");
+          setLoading(false);
+          return;
+        }
+        if (!newPassword || newPassword.length < 6) {
+          toast.error("Password must be at least 6 characters long.");
+          setLoading(false);
+          return;
+        }
+        console.log("[OTP] Resetting password via backend...");
+        const res = await resetPassword({
+          challengeId: otpState.challengeId,
+          otp: otpCode.trim(),
+          newPassword: newPassword.trim(),
+        });
+        console.log("[OTP] resetPassword success:", res);
+        toast.success(res?.message || "Password updated successfully.");
+        setMode("login");
+        setStep("credentials");
+        setOtpCode("");
+        setNewPassword("");
+        setOtpState(null);
+        setLoading(false);
+        return;
+      }
+
+      // ── Signup OTP verify step ────────────────────────────────────────────
+      if (step === "otp" && mode === "signup") {
+        // ── MSG91 Widget OTP verify path ─────────────────────────────────────────
+        if (otpState?.provider === "msg91_widget" && typeof window.verifyOtp === "function") {
+          console.log("[OTP] Using MSG91 widget verifyOtp for code:", otpCode.trim());
+          window.verifyOtp(
+            otpCode.trim(),
+            async (token) => {
+              console.log("[OTP] MSG91 widget verifyOtp success, access-token received:", token);
+              try {
+                const data = await verifyWidgetToken({
+                  token,
+                  name: form.name,
+                  email: form.email,
+                  phone: form.phone,
+                  address: form.address,
+                  password: form.password,
+                  role: form.role,
+                  mode: "signup",
+                });
+                console.log("[OTP] verifyWidgetToken success:", data);
+                login(data);
+                toast.success("Account verified successfully");
+                scrollToTop();
+                navigate(redirectTo);
+              } catch (err) {
+                const msg = err?.response?.data?.message || err?.message || "Server verification failed.";
+                console.error("[OTP] verifyWidgetToken error:", msg, err?.response?.data);
+                toast.error(msg);
+                setLoading(false);
+              }
+            },
+            (err) => {
+              const msg = err?.message || "Incorrect OTP. Please try again.";
+              console.error("[OTP] MSG91 widget verifyOtp failure:", err);
+              toast.error(msg);
+              setLoading(false);
+            }
+          );
+          return;
+        }
+
+        // ── Backend OTP verify path (challenge-based) ─────────────────────────
+        if (!otpState?.challengeId) {
+          toast.error("OTP session expired or invalid. Please start again.");
+          setLoading(false);
+          return;
+        }
+
+        console.log("[OTP] Verifying OTP via backend. challengeId:", otpState?.challengeId);
+        const data = await verifyOtpApi({
+          challengeId: otpState.challengeId,
           otp: otpCode.trim(),
         });
+        console.log("[OTP] Backend verifyOtp success:", data);
 
         login(data);
-        toast.success(mode === "signup" ? "Account verified successfully" : "Welcome back");
+        toast.success("Account verified successfully");
         scrollToTop();
         navigate(redirectTo);
       } else {
@@ -139,24 +378,68 @@ const AuthPage = () => {
               };
 
         if (mode === "signup") {
-          const challenge = await signupUser(payload);
-          setOtpState(challenge);
-          setOtpCode("");
-          setStep("otp");
-          setResendCountdown(challenge.resendAvailableInSeconds || 0);
-          setOtpExpiryCountdown(challenge.expiresInSeconds || 0);
-          toast.success(challenge.message || "OTP sent successfully");
+          // ── Always use backend WhatsApp OTP for signup ─────────────────────
+          // The MSG91 widget sends SMS/Voice — NOT WhatsApp.
+          // Our backend calls MSG91's WhatsApp outbound API directly.
+          console.log("[signup] Sending OTP via backend WhatsApp API...");
+          try {
+            const challenge = await signupUser(payload);
+            console.log("[signup] OTP challenge response:", challenge);
+            setOtpState(challenge);
+            setOtpCode("");
+            setStep("otp");
+            setResendCountdown(challenge?.resendAvailableInSeconds || 0);
+            setOtpExpiryCountdown(challenge?.expiresInSeconds || 0);
+            toast.success(challenge?.message || "OTP sent to your WhatsApp number.");
+            setLoading(false);
+          } catch (backendErr) {
+            const msg = backendErr?.response?.data?.message || backendErr?.message || "Failed to send OTP";
+            console.error("[signup] OTP send failed:", msg, backendErr?.response?.data);
+            toast.error(msg);
+            setLoading(false);
+          }
+        } else if (mode === "forgot_password") {
+          // ── Forgot password path ───────────────────────────────────────────
+          console.log("[OTP] Sending forgot password request to backend...");
+          try {
+            const res = await forgotPassword({
+              email: form.email || undefined,
+              phone: form.phone || undefined,
+            });
+            console.log("[OTP] forgotPassword response:", res);
+            setOtpState(res);
+            setOtpCode("");
+            setStep("forgot_otp");
+            setResendCountdown(res?.resendAvailableInSeconds || 0);
+            setOtpExpiryCountdown(res?.expiresInSeconds || 0);
+            toast.success(res?.message || "OTP sent successfully. Check your device.");
+          } catch (err) {
+            const msg = err?.response?.data?.message || err?.message || "Failed to send reset OTP";
+            toast.error(msg);
+          } finally {
+            setLoading(false);
+          }
         } else {
+          // ── Login path — ALWAYS direct, NO OTP ────────────────────────────
+          console.log("[login] Sending login request to backend...");
           const data = await loginUser(payload);
-          login(data);
-          toast.success("Welcome back");
-          scrollToTop();
-          navigate(redirectTo);
+          console.log("[login] loginUser response:", data);
+          if (data?.token) {
+            login(data);
+            toast.success("Welcome back");
+            scrollToTop();
+            navigate(redirectTo);
+          } else {
+            console.warn("[login] Unexpected loginUser response shape:", data);
+            toast.error("Unexpected response from server. Please try again.");
+            setLoading(false);
+          }
         }
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || "Authentication failed");
-    } finally {
+      const msg = error?.response?.data?.message || error?.message || "Authentication failed";
+      console.error("[OTP] submit() caught error:", msg, error?.response?.data || "");
+      toast.error(msg);
       setLoading(false);
     }
   };
@@ -166,33 +449,68 @@ const AuthPage = () => {
 
     setLoading(true);
     try {
+      if (otpState?.provider === "msg91_widget" && window.retryOtp) {
+        window.retryOtp(
+          undefined,
+          (res) => {
+            setOtpCode("");
+            setResendCountdown(45);
+            setOtpExpiryCountdown(300);
+            toast.success("A fresh OTP has been sent.");
+            setLoading(false);
+          },
+          (err) => {
+            toast.error(err?.message || "Unable to resend OTP via widget");
+            setLoading(false);
+          }
+        );
+        return;
+      }
+
+      console.log("[OTP] Resending OTP for challengeId:", otpState?.challengeId);
       const refreshedChallenge = await resendOtp({ challengeId: otpState.challengeId });
+      console.log("[OTP] resendOtp response:", refreshedChallenge);
       setOtpState(refreshedChallenge);
       setOtpCode("");
-      setResendCountdown(refreshedChallenge.resendAvailableInSeconds || 0);
-      setOtpExpiryCountdown(refreshedChallenge.expiresInSeconds || 0);
-      toast.success(refreshedChallenge.message || "A new OTP has been sent");
+      setResendCountdown(refreshedChallenge?.resendAvailableInSeconds || 0);
+      setOtpExpiryCountdown(refreshedChallenge?.expiresInSeconds || 0);
+      toast.success(refreshedChallenge?.message || "A new OTP has been sent");
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || "Unable to resend OTP");
+      const msg = error?.response?.data?.message || error?.message || "Unable to resend OTP";
+      console.error("[OTP] resendOtp error:", msg, error?.response?.data || "");
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
   const isSignup = mode === "signup";
+  const isForgot = mode === "forgot_password";
+  // "otp" step is ONLY valid for signup; login is always direct (no OTP)
+  const isOtpStep = step === "forgot_otp" || (step === "otp" && mode === "signup");
   const submitDisabled = loading;
-  const isOtpStep = step === "otp";
-  const headingText = isOtpStep
-    ? "Verify your email address"
-    : isSignup
-      ? "Create your account"
-      : "Welcome back";
-  const subText = isOtpStep
-    ? `Enter the one-time password sent to ${otpState?.destination || "your email address"}.`
-    : isSignup
-      ? "Create a simple profile to browse listings, connect with sellers, and manage your property activity."
-      : "Sign in to access saved listings, leads, and account activity in one place.";
-  const statusText = isSignup ? "New account" : "Secure access";
+
+  const headingText = step === "forgot_otp"
+    ? "Reset your password"
+    : (step === "otp" && mode === "signup")
+      ? (otpState?.channel === "whatsapp" ? "Verify your WhatsApp number" : "Verify your email address")
+      : isForgot
+        ? "Forgot password?"
+        : isSignup
+          ? "Create your account"
+          : "Welcome back";
+
+  const subText = step === "forgot_otp"
+    ? `Enter the one-time password sent to your registered WhatsApp number and choose a new password.`
+    : (step === "otp" && mode === "signup")
+      ? `Enter the one-time password sent to ${otpState?.destination || "your registered WhatsApp number"}.`
+      : isForgot
+        ? "Enter your registered email address or WhatsApp number. We'll send an OTP to your registered WhatsApp number to reset your password."
+        : isSignup
+          ? "Create a simple profile to browse listings, connect with sellers, and manage your property activity."
+          : "Sign in to access saved listings, leads, and account activity in one place.";
+
+  const statusText = isForgot ? "Recovery mode" : isSignup ? "New account" : "Secure access";
 
   return (
     <>
@@ -752,10 +1070,6 @@ const AuthPage = () => {
 
         <div className="auth-right">
           <motion.div className={`auth-card ${isSignup ? "auth-card-signup" : ""}`} initial="hidden" animate="show" variants={fade}>
-            <div className="auth-brand-mobile">
-              <BrandLogo className="auth-brand-mobile-img" />
-            </div>
-
             <div className="auth-card-surface">
               <div className="auth-topbar">
                 <div className="auth-badge">
@@ -764,26 +1078,28 @@ const AuthPage = () => {
                 <div className="auth-status">{statusText}</div>
               </div>
 
-              <div className="auth-mode-switch">
-                <button
-                  type="button"
-                  className={`auth-mode-btn ${!isSignup ? "is-active" : ""}`}
-                  onClick={() => {
-                    switchMode("login");
-                  }}
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  className={`auth-mode-btn ${isSignup ? "is-active" : ""}`}
-                  onClick={() => {
-                    switchMode("signup");
-                  }}
-                >
-                  Create Account
-                </button>
-              </div>
+              {!isOtpStep && !isForgot && (
+                <div className="auth-mode-switch">
+                  <button
+                    type="button"
+                    className={`auth-mode-btn ${!isSignup ? "is-active" : ""}`}
+                    onClick={() => {
+                      switchMode("login");
+                    }}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    className={`auth-mode-btn ${isSignup ? "is-active" : ""}`}
+                    onClick={() => {
+                      switchMode("signup");
+                    }}
+                  >
+                    Create Account
+                  </button>
+                </div>
+              )}
 
               <AnimatePresence mode="wait">
                 <motion.div key={mode} variants={fade} initial="hidden" animate="show" exit="exit">
@@ -792,9 +1108,45 @@ const AuthPage = () => {
                     <p className="auth-subtitle">{subText}</p>
                   </div>
 
-                  <form onSubmit={submit}>
+                  <form onSubmit={submit} noValidate>
                     <motion.div className="auth-fields" variants={stagger} initial="hidden" animate="show">
-                      {isOtpStep ? (
+                      {step === "forgot_otp" ? (
+                        <>
+                          <Field
+                            label="One-Time Password"
+                            icon={ShieldCheckIcon}
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            maxLength={6}
+                            placeholder="Enter 6-digit OTP"
+                            value={otpCode}
+                            onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                            required
+                          />
+
+                          <PasswordField
+                            label="New Password"
+                            icon={LockClosedIcon}
+                            placeholder="Choose a new password"
+                            value={newPassword}
+                            onChange={(event) => setNewPassword(event.target.value)}
+                            required
+                          />
+
+                          <motion.div variants={item} className="auth-otp-note">
+                            <ShieldCheckIcon className="auth-free-badge-icon" />
+                            <span>
+                              OTP expires in <strong>{Math.max(0, otpExpiryCountdown)} seconds</strong>.
+                              {otpState?.developmentOtp ? (
+                                <>
+                                  {" "}
+                                  Dev OTP: <code>{otpState.developmentOtp}</code>
+                                </>
+                              ) : null}
+                            </span>
+                          </motion.div>
+                        </>
+                      ) : step === "otp" ? (
                         <>
                           <Field
                             label="One-Time Password"
@@ -812,7 +1164,7 @@ const AuthPage = () => {
                             <ShieldCheckIcon className="auth-free-badge-icon" />
                             <span>
                               OTP expires in <strong>{Math.max(0, otpExpiryCountdown)} seconds</strong>.
-                              {!isSignup ? " This keeps your account sign-in protected." : " We’ll activate your account right after email verification."}
+                              {!isSignup ? " This keeps your account sign-in protected." : (otpState?.channel === "whatsapp" ? " We’ll activate your account right after WhatsApp verification." : " We’ll activate your account right after email verification.")}
                               {otpState?.developmentOtp ? (
                                 <>
                                   {" "}
@@ -836,7 +1188,7 @@ const AuthPage = () => {
                           ) : null}
 
                           <Field
-                            label="Email Address"
+                            label={isSignup ? "Email Address" : "Email Address (Optional)"}
                             icon={EnvelopeIcon}
                             type="email"
                             autoComplete="email"
@@ -846,29 +1198,17 @@ const AuthPage = () => {
                             required={isSignup}
                           />
 
-                          {isSignup ? (
-                            <Field
-                              label="Mobile Number (Optional)"
-                              icon={PhoneIcon}
-                              type="tel"
-                              inputMode="tel"
-                              autoComplete="tel"
-                              placeholder="9994005086"
-                              value={form.phone}
-                              onChange={(event) => onChange("phone", event.target.value)}
-                            />
-                          ) : (
-                            <Field
-                              label="Mobile Number (Optional)"
-                              icon={PhoneIcon}
-                              type="tel"
-                              inputMode="tel"
-                              autoComplete="tel"
-                              placeholder="9994005086"
-                              value={form.phone}
-                              onChange={(event) => onChange("phone", event.target.value)}
-                            />
-                          )}
+                          <Field
+                            label="WhatsApp Mobile Number"
+                            icon={PhoneIcon}
+                            type="tel"
+                            inputMode="tel"
+                            autoComplete="tel"
+                            placeholder="e.g. 9994005086"
+                            value={form.phone}
+                            onChange={(event) => onChange("phone", event.target.value)}
+                            required
+                          />
 
                           {isSignup ? (
                             <Field
@@ -880,16 +1220,19 @@ const AuthPage = () => {
                             />
                           ) : null}
 
-                          <Field
-                            label="Password"
-                            icon={LockClosedIcon}
-                            type="password"
-                            autoComplete={isSignup ? "new-password" : "current-password"}
-                            placeholder="Enter your password"
-                            value={form.password}
-                            onChange={(event) => onChange("password", event.target.value)}
-                            required
-                          />
+                          {!isForgot && (
+                            <PasswordField
+                              label="Password"
+                              icon={LockClosedIcon}
+                              autoComplete={isSignup ? "new-password" : "current-password"}
+                              placeholder="Enter your password"
+                              value={form.password}
+                              onChange={(event) => onChange("password", event.target.value)}
+                              required
+                              showForgotPasswordLink={mode === "login"}
+                              onForgotPasswordClick={() => switchMode("forgot_password")}
+                            />
+                          )}
 
                           {isSignup ? (
                             <SelectField
@@ -918,16 +1261,21 @@ const AuthPage = () => {
                         </>
                       )}
 
+
                       <motion.div variants={item}>
                         <button type="submit" className="auth-submit" disabled={submitDisabled}>
                           {loading ? <span className="auth-spinner" /> : null}
                           {loading
                             ? "Please wait..."
-                            : isOtpStep
-                              ? "Verify & Continue"
-                              : isSignup
-                                ? "Send OTP"
-                                : "Sign In"}
+                            : step === "forgot_otp"
+                              ? "Reset Password"
+                              : isOtpStep
+                                ? "Verify & Continue"
+                                : isForgot
+                                  ? "Send OTP"
+                                  : isSignup
+                                    ? "Send OTP"
+                                    : "Sign In"}
                         </button>
                       </motion.div>
                     </motion.div>
@@ -937,6 +1285,10 @@ const AuthPage = () => {
                         {isOtpStep ? (
                           <span>
                             Sending to <strong>{otpState?.destination || "your email address"}</strong>
+                          </span>
+                        ) : isForgot ? (
+                          <span>
+                            Remember password? <strong>Sign in to continue.</strong>
                           </span>
                         ) : isSignup ? (
                           <span>
@@ -973,10 +1325,14 @@ const AuthPage = () => {
                             type="button"
                             className="auth-toggle-btn"
                             onClick={() => {
-                              switchMode(isSignup ? "login" : "signup");
+                              if (isForgot) {
+                                switchMode("login");
+                              } else {
+                                switchMode(isSignup ? "login" : "signup");
+                              }
                             }}
                           >
-                            {isSignup ? "Back to Sign In" : "Create Account"}
+                            {isForgot ? "Back to Sign In" : isSignup ? "Back to Sign In" : "Create Account"}
                           </button>
                         )}
                       </div>

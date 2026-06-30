@@ -7,6 +7,7 @@ const sendEmail = require("../utils/sendEmail");
 const generateHtmlEmail = require("../utils/emailFormatter");
 const { sendWelcomeTemplateEmail } = require("../utils/sendEmailJs");
 const { sendEmailOtp, hasMsg91EmailConfig } = require("../utils/sendEmailOtp");
+const { sendWhatsAppOtp, hasMsg91WhatsAppConfig } = require("../utils/sendWhatsAppOtp");
 
 const FREE_POST_VALIDITY_DAYS = 90;
 const OTP_EXPIRY_MINUTES = Math.max(Number(process.env.OTP_EXPIRY_MINUTES) || 5, 1);
@@ -28,6 +29,14 @@ const maskEmail = (email) => {
   const [local, domain] = email.split("@");
   const visible = local.length > 1 ? local[0] : local;
   return `${visible}***@${domain}`;
+};
+
+// Mask phone: show first 3 chars + **** + last 4 chars, e.g. 919******5086
+const maskPhone = (phone) => {
+  if (!phone) return "your phone number";
+  const cleaned = String(phone).trim();
+  if (cleaned.length < 7) return cleaned;
+  return `${cleaned.slice(0, 3)}******${cleaned.slice(-4)}`;
 };
 
 const buildFreeOnboardingPack = () => {
@@ -91,13 +100,33 @@ const ensureFreeOnboardingValidity = async (user) => {
 const signupValidators = [
   body("name").trim().notEmpty(),
   body("email").isEmail().normalizeEmail(),
-  body("phone").optional().trim(),
+  body("phone").trim().notEmpty().withMessage("WhatsApp mobile number is required"),
   body("password").isLength({ min: 6 }),
   body("role").optional().isIn(["buyer", "customer", "seller", "agent", "broker", "builder", "admin"]),
   body("address").optional().trim(),
 ];
 
 const loginValidators = [
+  body("phone").trim().notEmpty().withMessage("WhatsApp mobile number is required"),
+  body("password").notEmpty().withMessage("Password is required"),
+  body("email").optional().custom((val) => {
+    if (val && val.trim().length > 0 && !val.includes("@")) {
+      throw new Error("Please enter a valid email address.");
+    }
+    return true;
+  }).normalizeEmail(),
+];
+
+const socialLoginValidators = [body("provider").isIn(["google", "facebook"]), body("token").notEmpty()];
+
+const verifyOtpValidators = [
+  body("challengeId").trim().notEmpty(),
+  body("otp").trim().isLength({ min: 4, max: 8 }).withMessage("OTP is required."),
+];
+
+const resendOtpValidators = [body("challengeId").trim().notEmpty()];
+
+const forgotPasswordValidators = [
   body().custom((value) => {
     const hasEmail = typeof value.email === "string" && value.email.trim().length > 0;
     const hasPhone = typeof value.phone === "string" && value.phone.trim().length > 0;
@@ -112,19 +141,15 @@ const loginValidators = [
 
     return true;
   }),
-  body("password").notEmpty().withMessage("Password is required"),
   body("email").optional().isEmail().normalizeEmail(),
   body("phone").optional().trim(),
 ];
 
-const socialLoginValidators = [body("provider").isIn(["google", "facebook"]), body("token").notEmpty()];
-
-const verifyOtpValidators = [
-  body("challengeId").trim().notEmpty(),
-  body("otp").trim().isLength({ min: 4, max: 8 }).withMessage("OTP is required."),
+const resetPasswordValidators = [
+  body("challengeId").trim().notEmpty().withMessage("Challenge ID is required"),
+  body("otp").trim().isLength({ min: 4, max: 8 }).withMessage("OTP is required"),
+  body("newPassword").isLength({ min: 6 }).withMessage("New password must be at least 6 characters long"),
 ];
-
-const resendOtpValidators = [body("challengeId").trim().notEmpty()];
 
 const sanitizeUser = (user) => ({
   id: user._id,
@@ -182,15 +207,19 @@ const buildOtpResponse = (user, meta = {}) => {
     )
   );
 
+  const isWhatsApp = meta.channel === "whatsapp";
+  const destination = isWhatsApp ? maskPhone(user.phone) : maskEmail(user.email);
+
   return {
     success: true,
     requiresOtp: true,
     challengeId: user.otpVerification?.challengeId,
     purpose: user.otpVerification?.purpose,
-    destination: maskEmail(user.email),
+    destination,
     expiresInSeconds,
     resendAvailableInSeconds,
-    provider: meta.provider || EMAIL_OTP_PROVIDER,
+    provider: meta.provider || (isWhatsApp ? "msg91_whatsapp" : EMAIL_OTP_PROVIDER),
+    channel: isWhatsApp ? "whatsapp" : "email",
     ...(meta.developmentOtp ? { developmentOtp: meta.developmentOtp } : {}),
   };
 };
@@ -231,7 +260,8 @@ const sendLoginAlert = async (user) => {
   }
 };
 
-const createOtpChallenge = async (user, purpose) => {
+const createOtpChallenge = async (user, purpose, options = {}) => {
+  const { forceChannel, loginPhone } = options;
   const otp = createOtpCode();
   const now = new Date();
   const expiresAt = new Date(now.getTime() + OTP_EXPIRY_MINUTES * 60 * 1000);
@@ -251,17 +281,53 @@ const createOtpChallenge = async (user, purpose) => {
 
   await user.save();
 
-  const delivery = await sendEmailOtp({
-    email: user.email,
-    name: user.name,
-    otp,
-    purpose,
-  });
+  let delivery;
+  let channel = "email";
 
-  return buildOtpResponse(user, {
+  // forceChannel = "phone"  → always WhatsApp to loginPhone (or user.phone fallback)
+  // forceChannel = "email"  → always email even if user has a phone stored
+  // no forceChannel         → legacy behaviour: WhatsApp if user.phone exists, else email
+  const targetPhone = loginPhone || user.phone;
+
+  if (forceChannel === "email") {
+    channel = "email";
+    console.log(`[otp] Sending Email OTP (forced) to: ${user.email}, purpose: ${purpose}`);
+    delivery = await sendEmailOtp({
+      email: user.email,
+      name: user.name,
+      otp,
+      purpose,
+    });
+  } else if (forceChannel === "phone" || (forceChannel === undefined && targetPhone)) {
+    channel = "whatsapp";
+    console.log(`[otp] Sending WhatsApp OTP to phone: ${targetPhone}, purpose: ${purpose}`);
+    delivery = await sendWhatsAppOtp({
+      phone: targetPhone,
+      otp,
+      purpose,
+    });
+  } else {
+    channel = "email";
+    console.log(`[otp] Sending Email OTP to: ${user.email}, purpose: ${purpose}`);
+    delivery = await sendEmailOtp({
+      email: user.email,
+      name: user.name,
+      otp,
+      purpose,
+    });
+  }
+
+  // Log the full delivery result so we can inspect MSG91's actual response
+  console.log(`[otp] Delivery result (provider: ${delivery.provider}):`, JSON.stringify(delivery.response, null, 2));
+
+  const otpResponse = buildOtpResponse(user, {
+    channel,
     provider: delivery.provider,
     developmentOtp: delivery.provider === "development" ? otp : "",
   });
+
+  console.log("[otp] OTP challenge response sent to frontend:", JSON.stringify(otpResponse, null, 2));
+  return otpResponse;
 };
 
 const verifyGoogleToken = async (token) => {
@@ -375,23 +441,47 @@ const signup = async (req, res) => {
   clearOtpState(user);
   await user.save();
 
-  const challenge = await createOtpChallenge(user, "email_signup");
-  return res.status(202).json({
+  // Normalize phone for MSG91 (10 digits → add country code 91)
+  const normalizedPhone = user.phone
+    ? (() => {
+        const cleaned = String(user.phone).replace(/\D/g, "");
+        return cleaned.length === 10 ? `91${cleaned}` : cleaned;
+      })()
+    : null;
+
+  let challenge;
+  try {
+    // Explicitly force WhatsApp OTP when phone is present, else fall back to email
+    challenge = await createOtpChallenge(user, "email_signup", {
+      forceChannel: normalizedPhone ? "phone" : "email",
+      loginPhone: normalizedPhone,
+    });
+  } catch (otpErr) {
+    console.error("[signup] OTP send failed:", otpErr.message, otpErr?.msg91Response || "");
+    return res.status(502).json({
+      message: otpErr.message || "Failed to send OTP. Please try again.",
+      msg91Error: otpErr?.msg91Response || null,
+    });
+  }
+  const channelLabel = challenge.channel === "whatsapp" ? "WhatsApp number" : "email address";
+  const signupResp = {
     ...challenge,
-    message: "OTP sent to your email address. Verify to activate your account.",
-  });
+    message: `OTP sent to your ${channelLabel}. Verify to activate your account.`,
+  };
+  console.log("[signup] Final response to frontend:", JSON.stringify(signupResp, null, 2));
+  return res.status(202).json(signupResp);
 };
 
 const login = async (req, res) => {
   const { email, phone, password } = req.body;
 
   let user = null;
-  if (email) {
-    user = await User.findOne({ email });
-  } else if (phone) {
+  if (phone) {
     const normalizedPhone = String(phone).trim().replace(/\D/g, "");
     const withCountry = normalizedPhone.length === 10 ? `91${normalizedPhone}` : normalizedPhone;
     user = await User.findOne({ phone: withCountry }) || await User.findOne({ phone: normalizedPhone });
+  } else if (email) {
+    user = await User.findOne({ email });
   }
 
   if (!user || !(await user.comparePassword(password))) {
@@ -402,15 +492,95 @@ const login = async (req, res) => {
     return res.status(403).json({ message: "Your account has been deactivated by the admin." });
   }
 
+  console.log(`[login] User "${user.email}" direct login success (OTP bypassed).`);
   await ensureFreeOnboardingValidity(user);
-  try {
-    await sendLoginAlert(user);
-    console.log(`[login] Login alert email sent to ${user.email}`);
-  } catch (error) {
-    console.error("[login] Login alert email failed:", error.message);
+  return res.json(issueAuthResponse(user));
+};
+
+const forgotPassword = async (req, res) => {
+  const { email, phone } = req.body;
+
+  let user = null;
+  if (email) {
+    user = await User.findOne({ email });
+  } else if (phone) {
+    const normalizedPhone = String(phone).trim().replace(/\D/g, "");
+    const withCountry = normalizedPhone.length === 10 ? `91${normalizedPhone}` : normalizedPhone;
+    user = await User.findOne({ phone: withCountry }) || await User.findOne({ phone: normalizedPhone });
   }
 
-  return res.json(issueAuthResponse(user));
+  if (!user) {
+    return res.status(404).json({ message: "No account found with this email or mobile number." });
+  }
+
+  if (user.status === "deactivated") {
+    return res.status(403).json({ message: "Your account has been deactivated by the admin." });
+  }
+
+  // Always send the reset OTP to the user's registered WhatsApp number.
+  // If the account has no phone on file, fall back to email.
+  const registeredPhone = user.phone ? String(user.phone).trim() : null;
+
+  try {
+    const challenge = await createOtpChallenge(user, "forgot_password", {
+      forceChannel: registeredPhone ? "phone" : "email",
+      loginPhone: registeredPhone,
+    });
+    const destination = challenge.channel === "whatsapp"
+      ? "registered WhatsApp number"
+      : "registered email address";
+    return res.status(202).json({
+      ...challenge,
+      message: `OTP sent to your ${destination}. Verify to reset your password.`,
+    });
+  } catch (otpErr) {
+    console.error("[forgotPassword] OTP send failed:", otpErr.message);
+    return res.status(502).json({
+      message: otpErr.message || "Failed to send OTP. Please try again.",
+      msg91Error: otpErr?.msg91Response || null,
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { challengeId, otp, newPassword } = req.body;
+
+  const user = await User.findOne({ "otpVerification.challengeId": challengeId });
+
+  if (!user || !user.otpVerification?.challengeId) {
+    return res.status(404).json({ message: "OTP session expired or invalid. Please request a new code." });
+  }
+
+  if (!user.otpVerification.expiresAt || new Date(user.otpVerification.expiresAt) < new Date()) {
+    clearOtpState(user);
+    await user.save();
+    return res.status(410).json({ message: "OTP expired. Please request a new code." });
+  }
+
+  if ((user.otpVerification.attempts || 0) >= (user.otpVerification.maxAttempts || OTP_MAX_ATTEMPTS)) {
+    clearOtpState(user);
+    await user.save();
+    return res.status(429).json({ message: "Too many invalid OTP attempts. Please request a new code." });
+  }
+
+  const otpMatches = user.otpVerification.codeHash === hashOtp(otp);
+
+  if (!otpMatches) {
+    user.otpVerification.attempts = (user.otpVerification.attempts || 0) + 1;
+    await user.save();
+    return res.status(401).json({ message: "Incorrect OTP. Please try again." });
+  }
+
+  // OTP matches. Update password!
+  user.password = newPassword;
+  clearOtpState(user);
+  await user.save();
+
+  console.log(`[resetPassword] User "${user.email}" successfully reset password.`);
+  return res.json({
+    success: true,
+    message: "Password reset successfully. Please sign in with your new password.",
+  });
 };
 
 const verifyOtp = async (req, res) => {
@@ -535,6 +705,112 @@ const socialLogin = async (req, res) => {
   return res.json(issueAuthResponse(user));
 };
 
+const verifyWidgetToken = async (req, res) => {
+  const { token, name, email, password, phone, address, role, mode } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ message: "Verification token is required" });
+  }
+
+  try {
+    const verifyUrl = process.env.MSG91_VERIFY_ACCESS_TOKEN_URL || "https://control.msg91.com/api/v5/widget/verifyAccessToken";
+    const authKey = process.env.MSG91_AUTH_KEY || "";
+
+    const msg91Response = await axios.post(
+      verifyUrl,
+      {
+        "authkey": authKey,
+        "access-token": token,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        timeout: 15000,
+      }
+    );
+
+    const data = msg91Response.data;
+    const isSuccess =
+      data?.status === "success" ||
+      data?.type === "success" ||
+      data?.message?.toLowerCase().includes("verified") ||
+      data?.verified === true;
+
+    if (!isSuccess) {
+      return res.status(401).json({ message: data?.message || "Invalid verification token" });
+    }
+
+    let user = null;
+    if (email) {
+      user = await User.findOne({ email });
+    }
+
+    if (!user && phone) {
+      const normalizedPhone = String(phone).trim().replace(/\D/g, "");
+      const withCountry = normalizedPhone.length === 10 ? `91${normalizedPhone}` : normalizedPhone;
+      user = await User.findOne({ phone: withCountry }) || await User.findOne({ phone: normalizedPhone });
+    }
+
+    if (mode === "signup") {
+      if (user) {
+        return res.status(409).json({ message: "Account already exists with this email/phone number." });
+      }
+
+      user = new User({
+        name,
+        email,
+        password,
+        phone: phone ? String(phone).trim() : undefined,
+        address,
+        role: role || "buyer",
+        isPhoneVerified: true,
+        isEmailVerified: true,
+        ...buildFreeOnboardingPack(),
+      });
+
+      clearOtpState(user);
+      await user.save();
+
+      try {
+        await sendWelcomeEmail(user, "signing up via widget");
+        console.log(`[signup-widget] Welcome email sent to ${user.email}`);
+      } catch (error) {
+        console.error("[signup-widget] Welcome email failed:", error.message);
+      }
+    } else {
+      if (!user) {
+        return res.status(404).json({ message: "Account not found. Please register first." });
+      }
+
+      if (user.status === "deactivated") {
+        return res.status(403).json({ message: "Your account has been deactivated by the admin." });
+      }
+
+      user.isEmailVerified = true;
+      user.isPhoneVerified = true;
+      clearOtpState(user);
+      await user.save();
+
+      try {
+        await sendLoginAlert(user);
+        console.log(`[login-widget] Login alert email sent to ${user.email}`);
+      } catch (error) {
+        console.error("[login-widget] Login alert email failed:", error.message);
+      }
+    }
+
+    await ensureFreeOnboardingValidity(user);
+    return res.json(issueAuthResponse(user));
+
+  } catch (error) {
+    const status = error?.response?.status;
+    const msg = error?.response?.data?.message || error?.response?.data?.error || error.message;
+    console.error(`[widget-verify] Access token verification failed (HTTP ${status || "?"}) — ${msg}`);
+    return res.status(502).json({ message: `Verification failed: ${msg}` });
+  }
+};
+
 const me = async (req, res) => {
   await ensureFreeOnboardingValidity(req.user);
   return res.json({ user: req.user });
@@ -546,10 +822,15 @@ module.exports = {
   socialLoginValidators,
   verifyOtpValidators,
   resendOtpValidators,
+  forgotPasswordValidators,
+  resetPasswordValidators,
   signup,
   login,
   verifyOtp,
   resendOtpCode,
   socialLogin,
+  verifyWidgetToken,
+  forgotPassword,
+  resetPassword,
   me,
 };

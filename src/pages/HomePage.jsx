@@ -39,6 +39,7 @@ const HERO_BG =
 import { fetchHomeProperties } from "../services/api/propertyApi";
 import { buildRealEstateAgentSchema, buildWebsiteSchema } from "../utils/seo";
 
+gsap.config({ nullTargetWarn: false });
 gsap.registerPlugin(ScrollTrigger);
 
 const MotionSection = motion.section;

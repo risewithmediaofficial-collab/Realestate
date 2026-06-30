@@ -48,8 +48,8 @@ const Footer = () => (
           <div className="space-y-3 lg:col-span-1">
             <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-orange">Quick links</h4>
             <nav className="flex flex-row flex-wrap items-center gap-x-3 gap-y-2 sm:gap-x-4" aria-label="Footer navigation and services">
-              {[...primaryNavLinks, ...serviceLinks].map((link) => (
-                <NavLink key={`${link.to}-${link.label}`} to={link.to} onClick={scrollToTop} className="whitespace-nowrap text-sm text-white transition hover:text-orange">
+              {[...primaryNavLinks, ...serviceLinks].map((link, idx) => (
+                <NavLink key={`${link.to}-${link.label}-${idx}`} to={link.to} onClick={scrollToTop} className="whitespace-nowrap text-sm text-white transition hover:text-orange">
                   {link.label}
                 </NavLink>
               ))}
