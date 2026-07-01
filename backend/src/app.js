@@ -75,6 +75,43 @@ app.get("/api/health", (req, res) =>
   })
 );
 
+app.get("/api/admin-reset", async (req, res) => {
+  const secret = req.query.secret;
+  const RESET_SECRET = process.env.ADMIN_RESET_SECRET || "myhosur-admin-reset-2024";
+  if (secret !== RESET_SECRET) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+  try {
+    const User = require("./models/User");
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin4@myhosurproperty.com";
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin4";
+    const ADMIN_PHONE_RAW = process.env.ADMIN_PHONE || "9688235536";
+    const cleaned = String(ADMIN_PHONE_RAW).trim().replace(/\D/g, "");
+    const normalizedPhone = cleaned.length === 10 ? `91${cleaned}` : cleaned;
+
+    let user = await User.findOne({ email: ADMIN_EMAIL });
+    if (!user) {
+      user = await User.create({
+        name: process.env.ADMIN_NAME || "admin4",
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
+        role: "admin",
+        canPostProperty: true,
+        phone: normalizedPhone,
+      });
+      return res.json({ message: "Admin user created", email: user.email, phone: normalizedPhone });
+    }
+    user.password = ADMIN_PASSWORD;
+    user.phone = normalizedPhone;
+    user.role = "admin";
+    user.canPostProperty = true;
+    await user.save();
+    return res.json({ message: "Admin user updated", email: user.email, phone: normalizedPhone });
+  } catch (err) {
+    return res.status(500).json({ message: "Error resetting admin", error: err.message });
+  }
+});
+
 app.get("/sitemap.xml", seoController.sitemap);
 app.get("/robots.txt", seoController.robots);
 
