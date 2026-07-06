@@ -32,7 +32,7 @@ const Footer = () => (
         <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr_1.1fr]">
           <div className="space-y-4 lg:col-span-1">
             <div className="flex flex-col items-start gap-1">
-              <BrandLogo className="h-10 w-auto max-w-[180px] sm:h-12" />
+              <BrandLogo className="h-12 w-auto max-w-[200px] sm:h-15" />
               <span className="text-[11px] font-medium leading-none text-white/60">
                 Powered by <span className="font-bold text-white">Gyes Construction</span>
               </span>

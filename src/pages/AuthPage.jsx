@@ -752,7 +752,7 @@ const AuthPage = () => {
           padding: 0;
         }
         .auth-badge-logo {
-          width: 150px;
+          width: 180px;
           max-width: 40vw;
         }
         .auth-badge-icon {

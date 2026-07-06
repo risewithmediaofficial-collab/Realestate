@@ -52,7 +52,7 @@ const DashboardSidebar = ({
 
           <div className="pt-4 shadow-[inset_0_1px_0_rgba(0,66,162,0.06)]">
             <div className="flex justify-center">
-              <BrandLogo className="h-auto w-[150px]" />
+              <BrandLogo className="h-auto w-[180px]" />
             </div>
             <p className="mt-2 text-center text-xs tracking-[0.16em] text-slate-400">2026</p>
           </div>
