@@ -1,4 +1,4 @@
-import logoSrc from "../assets/brand-logo.png";
+import logoSrc from "../assets/myhosurpropertylogo.png";
 
 const BrandLogo = ({ className = "", alt = "MyHosurProperty" }) => (
   <img src={logoSrc} alt={alt} className={`block object-contain ${className}`} />
