@@ -76,6 +76,11 @@ const pageTransition = {
   },
 };
 
+// Disable browser scroll restoration so refreshing always starts at the top
+if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+  window.history.scrollRestoration = "manual";
+}
+
 const idleCallback = (callback, timeout = 1200) => {
   if (typeof window === "undefined") return () => {};
   if ("requestIdleCallback" in window) {
@@ -147,7 +152,8 @@ const AppShell = () => {
     };
   }, [isListingsRoute]);
 
-  // Scroll to top when route changes (skip listings — it scrolls inside the results panel)
+  // Scroll to top on initial load/refresh AND on every route change
+  // (skip listings — it scrolls inside its own results panel)
   useEffect(() => {
     if (isListingsRoute) return;
 
@@ -155,12 +161,24 @@ const AppShell = () => {
     const originalScroll = htmlElement.style.scrollBehavior;
     htmlElement.style.scrollBehavior = "auto";
 
-    window.scrollTo(0, 0);
+    // Scroll immediately (handles most cases)
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+
+    // Also fire on the next animation frame in case the browser tries to
+    // restore scroll position asynchronously after initial paint
+    const raf = requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
 
     setTimeout(() => {
       htmlElement.style.scrollBehavior = originalScroll;
     }, 50);
+
+    return () => cancelAnimationFrame(raf);
   }, [location.pathname, isListingsRoute]);
 
   const hideNavbar = ["/admin/login"].some((p) =>
