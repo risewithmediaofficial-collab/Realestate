@@ -1,6 +1,4 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef } from "react";
-import Vivus from "vivus";
 import { ArrowRightIcon, CheckCircleIcon, ShieldCheckIcon, UsersIcon } from "../components/AppIcons";
 import CountUpNumber from "../components/CountUpNumber";
 import MarketingCard, { IconCircle } from "../components/MarketingCard";
@@ -37,98 +35,35 @@ const principles = [
 ];
 
 /* ── Vision / Mission / Core Values icons as inline SVGs for clean rendering ── */
-const VisionIcon = () => {
-  const svgRef = useRef(null);
+const VisionIcon = () => (
+  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto svg-animator">
+    <circle cx="32" cy="32" r="20" stroke="#0042a2" strokeWidth="3" fill="none"/>
+    <circle cx="32" cy="32" r="8" stroke="#0042a2" strokeWidth="3" fill="none"/>
+    <circle cx="32" cy="32" r="2" fill="#f79e26"/>
+    <line x1="32" y1="8" x2="32" y2="14" stroke="#0042a2" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="32" y1="50" x2="32" y2="56" stroke="#0042a2" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="8" y1="32" x2="14" y2="32" stroke="#0042a2" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="50" y1="32" x2="56" y2="32" stroke="#0042a2" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
 
-  useEffect(() => {
-    if (svgRef.current) {
-      new Vivus(svgRef.current, {
-        duration: 100,
-        type: "delayed",
-        start: "autostart",
-        animTimingFunction: Vivus.EASE_OUT
-      });
-    }
-  }, []);
+const MissionIcon = () => (
+  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto svg-animator">
+    <circle cx="32" cy="32" r="22" stroke="#0042a2" strokeWidth="3" fill="none"/>
+    <circle cx="32" cy="32" r="14" stroke="#0042a2" strokeWidth="2" fill="none" strokeDasharray="4 3"/>
+    <circle cx="32" cy="32" r="6" stroke="#0042a2" strokeWidth="2" fill="none"/>
+    <path d="M32 10 L36 20 L48 16 L40 26" stroke="#f79e26" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    <circle cx="32" cy="32" r="2.5" fill="#f79e26"/>
+  </svg>
+);
 
-  return (
-    <svg
-      ref={svgRef}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-16 w-16 mx-auto svg-animator"
-    >
-      <circle cx="32" cy="32" r="20" stroke="#0042a2" strokeWidth="3" fill="none"/>
-      <circle cx="32" cy="32" r="8" stroke="#0042a2" strokeWidth="3" fill="none"/>
-      <circle cx="32" cy="32" r="2" fill="#f79e26"/>
-      <line x1="32" y1="8" x2="32" y2="14" stroke="#0042a2" strokeWidth="2.5" strokeLinecap="round"/>
-      <line x1="32" y1="50" x2="32" y2="56" stroke="#0042a2" strokeWidth="2.5" strokeLinecap="round"/>
-      <line x1="8" y1="32" x2="14" y2="32" stroke="#0042a2" strokeWidth="2.5" strokeLinecap="round"/>
-      <line x1="50" y1="32" x2="56" y2="32" stroke="#0042a2" strokeWidth="2.5" strokeLinecap="round"/>
-    </svg>
-  );
-};
-
-const MissionIcon = () => {
-  const svgRef = useRef(null);
-
-  useEffect(() => {
-    if (svgRef.current) {
-      new Vivus(svgRef.current, {
-        duration: 100,
-        type: "delayed",
-        start: "autostart",
-        animTimingFunction: Vivus.EASE_OUT
-      });
-    }
-  }, []);
-
-  return (
-    <svg
-      ref={svgRef}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-16 w-16 mx-auto svg-animator"
-    >
-      <circle cx="32" cy="32" r="22" stroke="#0042a2" strokeWidth="3" fill="none"/>
-      <circle cx="32" cy="32" r="14" stroke="#0042a2" strokeWidth="2" fill="none" strokeDasharray="4 3"/>
-      <circle cx="32" cy="32" r="6" stroke="#0042a2" strokeWidth="2" fill="none"/>
-      <path d="M32 10 L36 20 L48 16 L40 26" stroke="#f79e26" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      <circle cx="32" cy="32" r="2.5" fill="#f79e26"/>
-    </svg>
-  );
-};
-
-const CoreValuesIcon = () => {
-  const svgRef = useRef(null);
-
-  useEffect(() => {
-    if (svgRef.current) {
-      new Vivus(svgRef.current, {
-        duration: 100,
-        type: "delayed",
-        start: "autostart",
-        animTimingFunction: Vivus.EASE_OUT
-      });
-    }
-  }, []);
-
-  return (
-    <svg
-      ref={svgRef}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-16 w-16 mx-auto svg-animator"
-    >
-      <path d="M32 8 L40 20 L54 22 L44 33 L46 48 L32 41 L18 48 L20 33 L10 22 L24 20 Z" stroke="#0042a2" strokeWidth="2.5" fill="none" strokeLinejoin="round"/>
-      <path d="M32 16 L37 24 L46 26 L40 33 L42 42 L32 37 L22 42 L24 33 L18 26 L27 24 Z" stroke="#f79e26" strokeWidth="1.5" fill="none" strokeLinejoin="round" opacity="0.7"/>
-      <circle cx="32" cy="32" r="3" fill="#f79e26"/>
-    </svg>
-  );
-};
+const CoreValuesIcon = () => (
+  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto svg-animator">
+    <path d="M32 8 L40 20 L54 22 L44 33 L46 48 L32 41 L18 48 L20 33 L10 22 L24 20 Z" stroke="#0042a2" strokeWidth="2.5" fill="none" strokeLinejoin="round"/>
+    <path d="M32 16 L37 24 L46 26 L40 33 L42 42 L32 37 L22 42 L24 33 L18 26 L27 24 Z" stroke="#f79e26" strokeWidth="1.5" fill="none" strokeLinejoin="round" opacity="0.7"/>
+    <circle cx="32" cy="32" r="3" fill="#f79e26"/>
+  </svg>
+);
 
 const vmcData = [
   {
