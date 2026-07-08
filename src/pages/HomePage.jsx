@@ -95,23 +95,6 @@ const propertyTypeDescriptions = {
   "Agricultural Land": ["Farm & agricultural", "land listings"],
 };
 
-/* Background images for each property type card hover */
-const propertyTypeImages = {
-  Plot: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80",
-  Villa: "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80",
-  "Independent House": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80",
-  Flat: "https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=800&q=80",
-  "Commercial Land": "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80",
-  "Agricultural Land": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80",
-};
-
-/* Background images for service preview cards */
-const serviceImages = {
-  "Property Transactions": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80",
-  "Legal & Registration": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80",
-  "Construction & Support": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=800&q=80",
-};
-
 const shortcutGroups = [
   {
     label: "Buy",
@@ -434,7 +417,6 @@ const HomePage = () => {
     }, homeRootRef);
 
     return () => ctx.revert();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // When featured properties load, recalculate ScrollTrigger positions
@@ -458,7 +440,6 @@ const HomePage = () => {
     return params.toString();
   }, [debouncedSearch, search.city, search.intent, search.propertyType]);
 
-  const featuredListings = featured.slice(0, 4);
   const selectedPropertyTypeLabel =
     propertyTypeOptions.find((option) => option.value === search.propertyType)?.label || "All types";
   const openShortcutGroup = shortcutGroups.find((group) => group.label === openShortcutMenu);
