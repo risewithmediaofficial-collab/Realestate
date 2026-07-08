@@ -398,6 +398,50 @@ p {
   transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
+/* Layout helpers: prevent unwanted horizontal gap and ensure consistent side padding */
+html, body {
+  /* Prevent horizontal overflow that can create a gap on some devices */
+  overflow-x: hidden;
+}
+
+/* Ensure the page-shell's visible content aligns consistently across pages.
+   Most inner sections already use `mx-auto max-w-[1440px]` and per-section
+   paddings; this ensures a consistent page-level gutter while allowing
+   component-level paddings to remain effective. */
+.page-shell {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Apply a small, consistent horizontal gutter to centered containers inside
+   `.page-shell` so content aligns visually across pages. */
+.page-shell .mx-auto {
+  padding-left: 1.25rem; /* matches px-5 (20px) visually -- adjust if needed */
+  padding-right: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .page-shell .mx-auto {
+    padding-left: 2.5rem; /* matches lg:px-10 where used */
+    padding-right: 2.5rem;
+  }
+}
+
+/* Ensure navbar and footer inner containers share the same horizontal gutters */
+header .mx-auto,
+footer .mx-auto {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  header .mx-auto,
+  footer .mx-auto {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
 .site-button-primary,
 .dashboard-primary {
   display: inline-flex;
